@@ -1,0 +1,11 @@
+## tools workspace
+workspace/
+
+## outputs
+out/
+
+## rust hdl
+vhdl_ls.toml
+
+## verible
+verible.filelist
