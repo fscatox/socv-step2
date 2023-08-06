@@ -36,7 +36,7 @@ SystemVerilog* step.
 [1] C. Spear and G. Tumbush, SystemVerilog for Verification: A Guide to Learning the Testbench
 Language Features, 3rd. Springer US, 2012, isbn: 9781461407140.
 
-[2] R. Salemi, The Uvm Primer: A Step-By-Step Introduction to the Universal Verification
+[2] R. Salemi, The UVM Primer: A Step-By-Step Introduction to the Universal Verification
 Methodology, Boston Light Press, 2013, isbn: 9780974164939.
 
 [3] “IEEE Standard for Verilog Hardware Description Language”, IEEE Std 1364-2005 (Revision of IEEE
