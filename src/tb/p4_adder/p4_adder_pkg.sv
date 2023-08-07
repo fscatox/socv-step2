@@ -6,7 +6,7 @@
  * Author            : Fabio Scatozza <s315216@studenti.polito.it>
  *
  * Date              : 05.08.2023
- * Last Modified Date: 06.08.2023
+ * Last Modified Date: 07.08.2023
  *
  * Copyright (c) 2023
  *
@@ -38,7 +38,6 @@ package p4_adder_pkg;
   typedef bit [NBIT-1:0] data_t; // speed up simulation, $isunknown() when reading from DUT
 
   /* virtual interfaces to be used by Driver and Monitor */
-  typedef virtual p4_adder_if vif_t;
   typedef virtual p4_adder_if.drv vif_drv_t;
   typedef virtual p4_adder_if.mon vif_mon_t;
 

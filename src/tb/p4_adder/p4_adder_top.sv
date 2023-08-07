@@ -32,7 +32,8 @@ program automatic p4_adder_test (p4_adder_if ifc);
   import uvm_pkg::*;
 
   initial begin
-    uvm_config_db#(p4_adder_pkg::vif_t)::set(null, "uvm_test_top", "vif", ifc);
+    uvm_config_db#(p4_adder_pkg::vif_drv_t)::set(null, "uvm_test_top", "vif_drv", ifc.drv);
+    uvm_config_db#(p4_adder_pkg::vif_mon_t)::set(null, "uvm_test_top", "vif_mon", ifc.mon);
 
     run_test();
   end

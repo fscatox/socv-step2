@@ -11,7 +11,7 @@
  * Author            : Fabio Scatozza <s315216@studenti.polito.it>
  *
  * Date              : 06.08.2023
- * Last Modified Date: 06.08.2023
+ * Last Modified Date: 07.08.2023
  *
  * Copyright (c) 2023
  *
@@ -87,16 +87,23 @@ class BaseTest extends uvm_test;
 
   /* configuration for the environment and the agent */
   virtual function void configure_env();
-    vif_t vif;
+    vif_drv_t vif_drv;
+    vif_mon_t vif_mon;
 
     /* pass the interface down the hierarchy */
-    if (!uvm_config_db#(vif_t)::get(this, "", "vif", vif))
-      uvm_report_fatal("config_db", "can't get vif");
+    if (!uvm_config_db#(vif_drv_t)::get(this, "", "vif_drv", vif_drv))
+      uvm_report_fatal("config_db", "can't get vif_drv");
     else
-      uvm_report_info("debug", "got vif", UVM_FULL);
+      uvm_report_info("debug", "got vif_drv", UVM_FULL);
 
-    env_cfg.agn_cfg.vif_mon = vif.mon;
-    env_cfg.agn_cfg.vif_drv = vif.drv;
+    if (!uvm_config_db#(vif_mon_t)::get(this, "", "vif_mon", vif_mon))
+      uvm_report_fatal("config_db", "can't get vif_mon");
+    else
+      uvm_report_info("debug", "got vif_mon", UVM_FULL);
+
+
+    env_cfg.agn_cfg.vif_drv = vif_drv;
+    env_cfg.agn_cfg.vif_mon = vif_mon;
 
     /* determine the number of request transactions */
     if (!$value$plusargs("n_txn=%d", env_cfg.n_xpected)) begin
