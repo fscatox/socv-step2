@@ -62,12 +62,14 @@ SystemVerilog* step.
           stimulus-specific covergroups.
 
         * [`src/tb/p4_adder/Printer.svh`](src/tb/p4_adder/Printer.svh) - listens on the monitor
-          analysis ports and prints the broadcasted transactions. Quiet tests can be developed by
-          overriding with the BitBucket child class.
+          analysis port and prints the broadcasted transactions to the screen and to a file. Quiet
+          tests, which don't display transaction on the screen, can be developed by overriding the Printer
+          class with the BitBucket child class. 
 
         * [`src/tb/p4_adder/Scoreboard.svh`](src/tb/p4_adder/Scoreboard.svh) - listens on the
           monitor analysis ports and validates DUT responses. The RspTxn encapsulate the request
-          data, which is used to compute the expected response.
+          data, which is used to compute the expected response. The comparison results are written
+          to a file.
 
         * [`src/tb/p4_adder/Environment.svh`](src/tb/p4_adder/Environment.svh) - default
           verification environment for the p4 adder. Test classes can customize it with both the
@@ -81,7 +83,13 @@ SystemVerilog* step.
           configuration of the environment and the common duties of child tests.
 
             - the number of request transactions can be set by command line with
-                `+n_txn=<txn number>`; otherwise, it defaults to 100
+              `+n_txn=<txn number>`; otherwise, it defaults to 100
+ 
+            - the printer file can be set by command line with `+printer_file=<file path>`;
+              otherwise it defaults to *printer.log*
+              
+            - the scoreboard file can be set by command line with `+scoreboard_file=<file path>`;
+              otherwise it defaults to *scoreboard.log*
 
             - to make the test quiet, pass the flag `+quiet`
 

@@ -35,6 +35,9 @@ typedef struct {
   int unsigned n_xpected; // from the test
   bit has_cov; // coverage collector
 
+  string scb_file; // log comparison results to file
+  string prt_file; // log transactions to file
+
 } env_cfg_t;
 
 class Environment extends uvm_env;
@@ -64,6 +67,8 @@ class Environment extends uvm_env;
     uvm_config_db #(uvm_active_passive_enum)::set(this, "agn", "is_active", UVM_ACTIVE);
     uvm_config_db#(int unsigned)::set(this, "scb", "n_xpected", cfg.n_xpected);
     uvm_config_db#(bit)::set(this, "scb", "has_cov", cfg.has_cov);
+    uvm_config_db#(string)::set(this, "scb", "scb_file", cfg.scb_file);
+    uvm_config_db#(string)::set(this, "prt", "prt_file", cfg.prt_file);
 
     agn = Agent::type_id::create("agn", this);
     scb = Scoreboard::type_id::create("scb", this);

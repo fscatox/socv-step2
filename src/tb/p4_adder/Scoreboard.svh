@@ -4,6 +4,7 @@
  * Description       : listens on the monitor analysis ports and validates DUT
  *                     responses. The RspTxn encapsulate the request data,
  *                     which is used to compute the expected response.
+ *                     The comparison results are written to a file.
  *
  * Author            : Fabio Scatozza <s315216@studenti.polito.it>
  *
@@ -38,6 +39,10 @@ class Scoreboard extends uvm_scoreboard;
 
   bit ok_to_end; // prevent the simulation to end before the monitor has captured the last response
 
+  /* log comparison results to file */
+  string scb_file;
+  int fd;
+
   uvm_analysis_imp#(RspTxn, Scoreboard) analysis_export;
 
   function new(string name, uvm_component parent);
@@ -57,12 +62,34 @@ class Scoreboard extends uvm_scoreboard;
     else
       uvm_report_info("debug", "got has_cov", UVM_FULL);
 
+    if (!uvm_config_db#(string)::get(this, "", "scb_file", scb_file))
+      uvm_report_fatal("config_db", "can't get scb_file");
+    else
+      uvm_report_info("debug", "got scb_file", UVM_FULL);
+
     n_total = 0;
     n_errors = 0;
 
     ok_to_end = 0;
 
   endfunction : build_phase
+
+  virtual function void end_of_elaboration_phase(uvm_phase phase);
+    fd = $fopen(scb_file, "w");
+
+    if (fd)
+      uvm_report_info("debug", "scoreboard file opened", UVM_FULL);
+    else
+      uvm_report_fatal("file_mgmt", "can't open scoreboard file");
+
+    set_report_id_file("scoreboard", fd);
+    set_report_severity_id_action(UVM_ERROR, "scoreboard", UVM_DISPLAY | UVM_COUNT | UVM_LOG);
+    set_report_severity_id_action(UVM_INFO, "scoreboard", UVM_LOG);
+
+    if (uvm_report_enabled(UVM_FULL))
+      dump_report_state();
+
+  endfunction : end_of_elaboration_phase
 
   virtual function void write(RspTxn t);
     RspTxn xpected;
@@ -76,7 +103,8 @@ class Scoreboard extends uvm_scoreboard;
 
       uvm_report_error("scoreboard", $sformatf("MISMATCH!\n Expected: %s\n Actual: %s",
         xpected.convert2string(), t.convert2string() ));
-    end
+    end else
+      uvm_report_info("scoreboard", "MATCH!");
 
     n_total++;
     uvm_report_info("debug", $sformatf("n_total: %0d", n_total), UVM_FULL);
@@ -109,6 +137,9 @@ class Scoreboard extends uvm_scoreboard;
       uvm_report_error("final", "TEST FAILED");
     else
       uvm_report_info("final", "TEST PASSED");
+
+    $fclose(fd);
+    uvm_report_info("debug", "printer file closed", UVM_FULL);
 
   endfunction : final_phase
 
