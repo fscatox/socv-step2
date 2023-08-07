@@ -7,7 +7,7 @@
  * Author            : Fabio Scatozza <s315216@studenti.polito.it>
  *
  * Date              : 05.08.2023
- * Last Modified Date: 05.08.2023
+ * Last Modified Date: 07.08.2023
  *
  * Copyright (c) 2023
  *
@@ -39,8 +39,8 @@ interface p4_adder_if (input bit clk);
 
   modport drv (clocking drv_cb);
 
-  /* sample request and response 1step before the falling edge */
-  clocking mon_cb @(negedge clk);
+  /* sample request and response 1step before the rising edge */
+  clocking mon_cb @(posedge clk);
     input a, b, cin, s, cout;
   endclocking
 

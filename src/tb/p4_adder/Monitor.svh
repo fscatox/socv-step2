@@ -9,7 +9,7 @@
  * Author            : Fabio Scatozza <s315216@studenti.polito.it>
  *
  * Date              : 05.08.2023
- * Last Modified Date: 05.08.2023
+ * Last Modified Date: 07.08.2023
  *
  * Copyright (c) 2023
  *
@@ -54,6 +54,8 @@ class Monitor extends uvm_monitor;
 
   task run_phase(uvm_phase phase);
     RspTxn rsp;
+
+    @(vif.mon_cb); // skip first cycle
 
     forever begin
       capture(rsp); // allocate a new transaction
