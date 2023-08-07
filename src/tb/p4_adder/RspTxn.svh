@@ -7,7 +7,7 @@
  * Author            : Fabio Scatozza <s315216@studenti.polito.it>
  *
  * Date              : 05.08.2023
- * Last Modified Date: 05.08.2023
+ * Last Modified Date: 07.08.2023
  *
  * Copyright (c) 2023
  *
@@ -28,7 +28,7 @@
 `define RSPTXN_SVH
 
 class RspTxn extends RqstTxn;
-  /* no factory */
+  `uvm_object_utils(RspTxn)
 
   p4_adder_pkg::data_t s;
   bit cout;
