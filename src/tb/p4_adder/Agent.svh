@@ -55,6 +55,7 @@ class Agent extends uvm_agent;
   endfunction
 
   virtual function void build_phase(uvm_phase phase);
+    ap = new("ap", this);
 
     if (!uvm_config_db#(agn_cfg_t)::get(this, "", "agn_cfg", cfg))
       uvm_report_fatal("config_db", "can't get agn_cfg");
