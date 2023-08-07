@@ -1,7 +1,9 @@
 /**
  * File              : p4_adder_pkg.sv
  *
- * Description       : namespace for the p4 adder UVM-based testbench
+ * Description       : namespace for the p4 adder UVM-based testbench. The
+ *                     dut generics are set at compile time defining the
+ *                     macros "NBIT" and "NBIT_PER_BLOCK" by command line.
  *
  * Author            : Fabio Scatozza <s315216@studenti.polito.it>
  *

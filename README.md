@@ -13,6 +13,9 @@ SystemVerilog* step.
 
 - [Contents](#contents)
 - [Introduction](#introduction)
+- [Verification Plan](#verification-plan)
+  - [Pentium IV Adder](#pentium-iv-adder)
+  - [Windowed Register File](#windowed-register-file)
 - [Included Files](#included-files)
 - [Usage](#usage)
 - [References](#references)
@@ -20,6 +23,85 @@ SystemVerilog* step.
 <!-- /code_chunk_output -->
 
 ## Introduction
+
+In the *Introduction to SystemVerilog* step, I had the opportunity to begin tackling the
+shortcomings of the directed testing approach, getting familiar with some common principles of
+more advanced verification methodologies and their elected language, SystemVerilog. Most notably:
+ 
+- *constrained-random stimuli*. Contrary to directed tests, which find bugs where they are expected
+  to be, randomness allows to find bugs that were never anticipated; at the same time, constraints
+  are essential to ensure that the stimulus is valid and relevant to the DUT. 
+
+- *functional coverage*. Once having switched to random tests, functional coverage becomes the metric
+  for tracking progress in the verification plan, ensuring that all the intended features of the DUT
+  were exercised.
+
+- *layered structure*. Random stimuli imply the need for an environment capable of predicting the
+  expected response; building this infrastructure requires additional work, thus the importance of
+  effectively managing complexity:
+
+    - the abstraction level is raised up to the transaction level. The environment is structured in a
+      layered manner, composing simpler modules. 
+
+    - language expressiveness limits analyzability, synthesizability and optimizability. Nonetheless,
+      being verification the primary goal, HDLs make way for SystemVerilog and its convenient set of
+      features.
+
+Primarily guided by [1], I leveraged object-oriented and generic programming principles to develop a
+reusable, templated testbench framework that I was than able to specialize for specific DUTs. By
+designing and developing the entire testbench architecture, I gained a better understanding of the
+techniques that go into the classes and utilities of standardized verification libraries such as the
+UVM.
+
+The goal of this step is to apply the UVM to develop a fully-fledged SystemVerilog verification
+environment for some intermediate designs from the *Microelectronic Systems* course laboratories:
+
+- the Pentium IV Adder, described with generic data parallelism and tree sparseness;
+
+- a windowed register file
+
+As a glimpse of the used UVM features:
+
+- customization both via the factory and the configuration database
+
+- TLM and analysis communication 
+
+- id and severity specific logging to file
+
+- bottom-up veto power via objections and `phase_ready_to_end()`
+
+## Verification Plan
+
+The verification plan is directly derived from the design specifications and encompasses the
+description of what features shall be exercised and the techniques to do so. 
+
+Given that the DUTs are parameterized, a simple approach for verifying their correctness is to let
+the parameters be defined as compile-time options and repeat the simulations while changing them in
+the set of interest.
+
+### Pentium IV Adder
+
+    for i in {3, ..., 7}
+      for j in {2, ..., i-1}
+        define NBIT = 2^i
+        define NBIT_PER_BLOCK = 2^j
+
+Testcases:
+
+1. zero input
+     - all 0s on an input
+     - all 0s on both inputs
+
+2. one input
+     - all 1s on an input
+     - all 1s on both inputs
+
+3. 0s on both inputs and carry-in '0'
+
+4. 1s on both inputs and carry-in '1' 
+
+### Windowed Register File
+
 
 ## Included Files
 
@@ -33,7 +115,7 @@ SystemVerilog* step.
 
     * [`src/tb/p4_adder`](src/tb/p4_adder) - Pentium IV Adder sources
 
-        * [`src/tb/p4_adder/p4_adder_if.sv`](src/tb/p4_adder/p4_adder_if.sv) - bundles the dut wires
+        * [`src/tb/p4_adder/p4_adder_if.sv`](src/tb/p4_adder/p4_adder_if.sv) - bundles the DUT wires
           encapsulating synchronization information for the verification environment.
 
         * [`src/tb/p4_adder/RqstTxn.svh`](src/tb/p4_adder/RqstTxn.svh) - base request transaction
@@ -80,7 +162,7 @@ SystemVerilog* step.
           transaction through the factory.
 
         * [`src/tb/p4_adder/BaseTest.svh`](src/tb/p4_adder/BaseTest.svh) - handles the default
-          configuration of the environment and the common duties of child tests.
+          configuration of the environment and the common DUTies of child tests.
 
             - the number of request transactions can be set by command line with
               `+n_txn=<txn number>`; otherwise, it defaults to 100
@@ -94,10 +176,11 @@ SystemVerilog* step.
             - to make the test quiet, pass the flag `+quiet`
 
         * [`src/tb/p4_adder/p4_adder_pkg.sv`](src/tb/p4_adder/p4_adder_pkg.sv) - namespace for the
-          p4 adder UVM-based testbench.
+          p4 adder UVM-based testbench. The DUT generics are set at compile time defining the macros
+          *NBIT* and *NBIT_PER_BLOCK* by command line.
 
         * [`src/tb/p4_adder/p4_adder_top.sv`](src/tb/p4_adder/p4_adder_top.sv) - instantiates the
-          dut and the free running clock, then it sets up and invokes the test specified by command
+          DUT and the free running clock, then it sets up and invokes the test specified by command
           line with `+UVM_TESTNAME=<test name>`
 ## Usage
 
