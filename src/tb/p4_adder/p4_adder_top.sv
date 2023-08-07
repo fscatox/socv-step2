@@ -55,7 +55,7 @@ module p4_adder_top;
   /* instantiations */
   p4_adder_if ifc(clk);
 
-  p4_adder_test(ifc);
+  p4_adder_test test_prgm(ifc);
 
   p4_adder#(
     .nbit(p4_adder_pkg::NBIT),
