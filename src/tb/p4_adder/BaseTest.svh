@@ -49,7 +49,7 @@ class BaseTest extends uvm_test;
     uvm_config_db#(env_cfg_t)::set(this, "env", "env_cfg", env_cfg);
     uvm_config_db#(int unsigned)::set(this, "seq", "n_txn", env_cfg.n_xpected);
 
-    if($value$plusargs("quiet")) begin
+    if($test$plusargs("quiet")) begin
       Printer::type_id::set_type_override(BitBucket::get_type());
       uvm_report_info("debug", "got +quiet, done printer override", UVM_FULL);
     end
@@ -59,7 +59,7 @@ class BaseTest extends uvm_test;
   endfunction : build_phase
 
   virtual function void end_of_elaboration_phase(uvm_phase phase);
-    seq = RqstSequence::type_id::create("seq", this);
+    seq = RqstSequence::type_id::create("seq");
 
     uvm_report_info("debug", "End of elaboration hierarchy:", UVM_FULL);
     if (uvm_report_enabled(UVM_FULL))
