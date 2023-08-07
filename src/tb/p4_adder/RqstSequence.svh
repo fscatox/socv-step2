@@ -8,7 +8,7 @@
  * Author            : Fabio Scatozza <s315216@studenti.polito.it>
  *
  * Date              : 06.08.2023
- * Last Modified Date: 06.08.2023
+ * Last Modified Date: 07.08.2023
  *
  * Copyright (c) 2023
  *
@@ -34,13 +34,13 @@ class RqstSequence extends uvm_sequence#(RqstTxn);
   RqstTxn rqst;
   int unsigned n_txn; /* optionally set by the test */
 
-  function new(string name);
+  function new(string name = "RqstSequence");
     super.new(name);
   endfunction
 
   task body();
 
-    if (!uvm_config_db#(int unsigned)::get(this, "", "n_txn", n_txn))
+    if (!uvm_config_db#(int unsigned)::get(null, "uvm_test_top.seq", "n_txn", n_txn))
       uvm_report_fatal("sequence", "can't get n_txn");
     else
       uvm_report_info("debug", "got n_txn", UVM_FULL);
