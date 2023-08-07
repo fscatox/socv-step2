@@ -36,6 +36,8 @@ class Scoreboard extends uvm_scoreboard;
 
   bit has_cov;
 
+  bit ok_to_end; // prevent the simulation to end before the monitor has captured the last response
+
   uvm_analysis_imp#(RspTxn, Scoreboard) analysis_export;
 
   function new(string name, uvm_component parent);
@@ -58,6 +60,8 @@ class Scoreboard extends uvm_scoreboard;
     n_total = 0;
     n_errors = 0;
 
+    ok_to_end = 0;
+
   endfunction : build_phase
 
   virtual function void write(RspTxn t);
@@ -77,7 +81,26 @@ class Scoreboard extends uvm_scoreboard;
     n_total++;
     uvm_report_info("debug", $sformatf("n_total: %0d", n_total), UVM_FULL);
 
+    if (n_total == n_xpected) begin
+      ok_to_end = 1;
+      uvm_report_info("debug", "ok_to_end", UVM_FULL);
+    end
+
   endfunction : write
+
+  virtual function void phase_ready_to_end(uvm_phase phase);
+    if (!ok_to_end) begin
+      phase.raise_objection(this, "scoreboard: n_total != n_xpected");
+
+      fork begin
+        wait(ok_to_end);
+        uvm_report_info("debug", "phase_ready_to_end(): waked up", UVM_FULL);
+
+        phase.drop_objection(this, "scoreboard: n_total == n_xpected");
+      end join_none
+
+    end
+  endfunction : phase_ready_to_end
 
   virtual function void final_phase(uvm_phase phase);
     uvm_report_info("final", {"Scoreboard Summary:\n", convert2string()});
