@@ -71,6 +71,9 @@ class BaseTest extends uvm_test;
     if (!$value$plusargs("n_txn=%d", env_cfg.n_xpected)) begin
       env_cfg.n_xpected = 100;
       uvm_report_info("debug", "no +n_txn arg", UVM_FULL);
+    end else if (!env_cfg.n_xpected) begin
+      env_cfg.n_xpected = 100;
+      uvm_report_warning("cmdline", "wrong arg +n_txn=0");
     end else
       uvm_report_info("debug", $sformatf("got +n_txn=%0d", env_cfg.n_xpected), UVM_FULL);
 
