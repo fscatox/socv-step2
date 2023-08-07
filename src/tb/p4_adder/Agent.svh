@@ -66,7 +66,7 @@ class Agent extends uvm_agent;
       seqr = Sequencer::type_id::create("seqr", this);
       drv = Driver::type_id::create("drv", this);
 
-      uvm_report_info("debug", "UVM_ACTIVE, create");
+      uvm_report_info("debug", "UVM_ACTIVE, create", UVM_FULL);
     end
 
     mon = Monitor::type_id::create("mon", this);
@@ -82,7 +82,7 @@ class Agent extends uvm_agent;
       drv.seq_item_port.connect(seqr.seq_item_export);
       drv.vif = cfg.vif_drv;
 
-      uvm_report_info("debug", "UVM_ACTIVE, connect");
+      uvm_report_info("debug", "UVM_ACTIVE, connect", UVM_FULL);
     end
 
   endfunction : connect_phase
