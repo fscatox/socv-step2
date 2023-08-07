@@ -59,6 +59,8 @@ class Driver extends uvm_driver#(RqstTxn);
     vif.drv_cb.b <= rqst.b;
     vif.drv_cb.cin <= rqst.cin;
 
+    uvm_report_info("debug", $sformatf("applied item: %s", rqst.convert2string()), UVM_FULL);
+
   endtask : apply_item
 
 endclass

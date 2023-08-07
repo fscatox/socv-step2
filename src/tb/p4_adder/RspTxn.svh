@@ -66,8 +66,7 @@ class RspTxn extends RqstTxn;
   endfunction : do_compare
 
   virtual function string convert2string();
-    return $sformatf("%s\n %s\n s \t%x\n cout \t%b\n",
-      super.convert2string(), this.get_name(), s, cout);
+    return $sformatf("%s\n s \t%x\n cout \t%b\n", super.convert2string(), s, cout);
    endfunction : convert2string
 
 endclass

@@ -61,11 +61,9 @@ class BaseTest extends uvm_test;
   virtual function void end_of_elaboration_phase(uvm_phase phase);
     seq = RqstSequence::type_id::create("seq");
 
-    uvm_report_info("debug", "End of elaboration hierarchy:", UVM_FULL);
     if (uvm_report_enabled(UVM_FULL))
       uvm_top.print_topology();
 
-    uvm_report_info("debug", "End of elaboration config db:", UVM_FULL);
     if (uvm_report_enabled(UVM_FULL))
       uvm_config_db#(int)::dump();
 
@@ -73,7 +71,6 @@ class BaseTest extends uvm_test;
 
   virtual function void start_of_simulation_phase(uvm_phase phase);
 
-    uvm_report_info("debug", "Start of simulation factory:", UVM_FULL);
     if (uvm_report_enabled(UVM_FULL))
       uvm_factory::get().print();
 
