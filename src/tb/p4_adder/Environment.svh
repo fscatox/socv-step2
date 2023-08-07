@@ -33,7 +33,7 @@ typedef struct {
   agn_cfg_t agn_cfg; // agent configuration object
 
   int unsigned n_xpected; // from the test
-  bit only_print; // no scoreboard and coverage collector
+  bit has_cov; // coverage collector
 
 } env_cfg_t;
 
@@ -63,14 +63,14 @@ class Environment extends uvm_env;
     uvm_config_db#(agn_cfg_t)::set(this, "agn", "agn_cfg", cfg.agn_cfg);
     uvm_config_db #(uvm_active_passive_enum)::set(this, "agn", "is_active", UVM_ACTIVE);
     uvm_config_db#(int unsigned)::set(this, "scb", "n_xpected", cfg.n_xpected);
+    uvm_config_db#(bit)::set(this, "scb", "has_cov", cfg.has_cov);
 
     agn = Agent::type_id::create("agn", this);
+    scb = Scoreboard::type_id::create("scb", this);
 
-    if (!cfg.only_print) begin
-      scb = Scoreboard::type_id::create("scb", this);
+    if (cfg.has_cov) begin
       cov = Coverage::type_id::create("cov", this);
-
-      uvm_report_info("debug", "cfg.only_print == 0, create", UVM_FULL);
+      uvm_report_info("debug", "cfg.has_cov == 1, create", UVM_FULL);
     end
 
     prt = Printer::type_id::create("prt", this);
@@ -80,11 +80,12 @@ class Environment extends uvm_env;
 
   virtual function void connect_phase(uvm_phase phase);
 
-    if (!cfg.only_print) begin
-      agn.ap.connect(scb.analysis_export);
+    agn.ap.connect(scb.analysis_export);
+
+    if (cfg.has_cov) begin
       agn.ap.connect(cov.analysis_export);
 
-      uvm_report_info("debug", "cfg.only_print == 0, connect", UVM_FULL);
+      uvm_report_info("debug", "cfg.has_cov == 1, connect", UVM_FULL);
     end
 
     agn.ap.connect(prt.analysis_export);

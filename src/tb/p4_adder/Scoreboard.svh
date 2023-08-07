@@ -8,7 +8,7 @@
  * Author            : Fabio Scatozza <s315216@studenti.polito.it>
  *
  * Date              : 06.08.2023
- * Last Modified Date: 06.08.2023
+ * Last Modified Date: 07.08.2023
  *
  * Copyright (c) 2023
  *
@@ -34,6 +34,8 @@ class Scoreboard extends uvm_scoreboard;
   int unsigned n_xpected, n_total;
   int unsigned n_errors;
 
+  bit has_cov;
+
   uvm_analysis_imp#(RspTxn, Scoreboard) analysis_export;
 
   function new(string name, uvm_component parent);
@@ -47,6 +49,11 @@ class Scoreboard extends uvm_scoreboard;
       uvm_report_fatal("config_db", "can't get n_xpected");
     else
       uvm_report_info("debug", "got n_xpected", UVM_FULL);
+
+    if (!uvm_config_db#(bit)::get(this, "", "has_cov", has_cov))
+      uvm_report_fatal("config_db", "can't get has_cov");
+    else
+      uvm_report_info("debug", "got has_cov", UVM_FULL);
 
     n_total = 0;
     n_errors = 0;
@@ -73,14 +80,12 @@ class Scoreboard extends uvm_scoreboard;
   endfunction : write
 
   virtual function void final_phase(uvm_phase phase);
-    uvm_report_info("final", $sformatf("\tTransactions: %0d out of %0d\n", n_xpected, n_total));
-    uvm_report_info("final", $sformatf("\tErrors      : %0d\n", n_errors));
-    uvm_report_info("final", $sformatf("\tCoverage    : %.2f%%\n", $get_coverage));
+    uvm_report_info("final", {"Scoreboard Summary:\n", convert2string()});
 
     if ((n_xpected != n_total) || n_errors)
-      uvm_report_error("final", "#### TEST FAILED");
+      uvm_report_error("final", "TEST FAILED");
     else
-      uvm_report_info("final", "#### TEST PASSED");
+      uvm_report_info("final", "TEST PASSED");
 
   endfunction : final_phase
 
@@ -92,6 +97,18 @@ class Scoreboard extends uvm_scoreboard;
     uvm_report_info("debug", $sformatf("generate_prediction(): %s", t.convert2string()), UVM_FULL);
 
   endfunction : generate_prediction
+
+  function string convert2string();
+    string s;
+
+    $sformat(s, " Transactions: %0d out of %0d\n", n_total, n_xpected);
+    $sformat(s, "%s Errors      : %0d\n", s, n_errors);
+
+    if (has_cov)
+      $sformat(s, "%s Coverage    : %.2f%%\n", s, $get_coverage);
+
+    return s;
+  endfunction : convert2string
 
 endclass
 

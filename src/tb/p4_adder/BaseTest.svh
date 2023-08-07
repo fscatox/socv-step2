@@ -109,8 +109,8 @@ class BaseTest extends uvm_test;
     end else
       uvm_report_info("debug", $sformatf("got +n_txn=%0d", env_cfg.n_xpected), UVM_FULL);
 
-    /* by default: no scoreboard, no coverage collector */
-    env_cfg.only_print = 1;
+    /* by default: no coverage collector */
+    env_cfg.has_cov = 0;
 
   endfunction : configure_env
 
