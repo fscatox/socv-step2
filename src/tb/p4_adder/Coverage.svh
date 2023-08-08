@@ -1,14 +1,15 @@
 /**
  * File              : Coverage.svh
  *
- * Description       : base coverage collector class. Tests can use the
- *                     factory to override with a child class that includes
- *                     stimulus-specific covergroups
+ * Description       : base coverage collector abstract class. Tests must use
+ *                     the factory to override with a child class that
+ *                     includes stimulus-specific covergroups and implements
+ *                     the "sample()" callback
  *
  * Author            : Fabio Scatozza <s315216@studenti.polito.it>
  *
  * Date              : 06.08.2023
- * Last Modified Date: 06.08.2023
+ * Last Modified Date: 08.08.2023
  *
  * Copyright (c) 2023
  *
@@ -28,7 +29,7 @@
 `ifndef COVERAGE_SVH
 `define COVERAGE_SVH
 
-class Coverage extends uvm_subscriber#(RspTxn);
+virtual class Coverage extends uvm_subscriber#(RspTxn);
   `uvm_component_utils(Coverage)
 
   RspTxn txn;
@@ -41,10 +42,16 @@ class Coverage extends uvm_subscriber#(RspTxn);
 
     // grab the object
     txn = t;
-
     uvm_report_info("debug", $sformatf("write(): grabbed %s", txn.convert2string()), UVM_FULL);
 
+    // sample local transaction
+    sample();
+    uvm_report_info("debug", "write(): sampled", UVM_FULL);
+
   endfunction : write
+
+  /* implemented by child classes to trigger the sampling of covergroups */
+  pure virtual function void sample();
 
 endclass
 

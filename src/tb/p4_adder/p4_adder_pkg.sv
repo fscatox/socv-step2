@@ -8,7 +8,7 @@
  * Author            : Fabio Scatozza <s315216@studenti.polito.it>
  *
  * Date              : 05.08.2023
- * Last Modified Date: 07.08.2023
+ * Last Modified Date: 08.08.2023
  *
  * Copyright (c) 2023
  *
@@ -56,6 +56,11 @@ package p4_adder_pkg;
   `include "Environment.svh"
   `include "RqstSequence.svh"
   `include "BaseTest.svh"
+
+  /* tests */
+  `include "CnstRqstTxn.svh"
+  `include "StmCoverage.svh"
+  `include "Test.svh"
 
 endpackage
 

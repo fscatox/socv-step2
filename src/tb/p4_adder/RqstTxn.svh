@@ -9,7 +9,7 @@
  * Author            : Fabio Scatozza <s315216@studenti.polito.it>
  *
  * Date              : 05.08.2023
- * Last Modified Date: 05.08.2023
+ * Last Modified Date: 08.08.2023
  *
  * Copyright (c) 2023
  *
@@ -32,7 +32,7 @@
 class RqstTxn extends uvm_sequence_item;
   `uvm_object_utils(RqstTxn)
 
-  rand p4_adder_pkg::data_t a, b;
+  rand data_t a, b;
   rand bit cin;
 
   function new(string name = "RqstTxn");

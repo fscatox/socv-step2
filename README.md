@@ -89,16 +89,21 @@ the set of interest.
 Testcases:
 
 1. zero input
-     - all 0s on an input
-     - all 0s on both inputs
+     1. all 0s on an input
+     2. all 0s on both inputs
 
 2. one input
-     - all 1s on an input
-     - all 1s on both inputs
+     1. all 1s on an input
+     2. all 1s on both inputs
 
-3. 0s on both inputs and carry-in '0'
+3. non-corner values on both inputs
 
-4. 1s on both inputs and carry-in '1' 
+4. 0s on both inputs and carry-in '0'
+
+5. 1s on both inputs and carry-in '1'
+
+6. (unsigned) overflow
+
 
 ### Windowed Register File
 
@@ -140,8 +145,8 @@ Testcases:
           mode.
 
         * [`src/tb/p4_adder/Coverage.svh`](src/tb/p4_adder/Coverage.svh) - base coverage collector
-          class. Tests can use the factory to override with a child class that includes
-          stimulus-specific covergroups.
+          abstract class. Tests must use the factory to override with a child class that includes
+          stimulus-specific covergroups and implements the `sample()` callback.
 
         * [`src/tb/p4_adder/Printer.svh`](src/tb/p4_adder/Printer.svh) - listens on the monitor
           analysis port and prints the broadcasted transactions to the screen and to a file. Quiet
@@ -182,6 +187,17 @@ Testcases:
         * [`src/tb/p4_adder/p4_adder_top.sv`](src/tb/p4_adder/p4_adder_top.sv) - instantiates the
           DUT and the free running clock, then it sets up and invokes the test specified by command
           line with `+UVM_TESTNAME=<test name>`
+
+        * [`src/tb/p4_adder/CnstRqstTxn.svh`](src/tb/p4_adder/CnstRqstTxn.svh) - extends RqstTxn
+          adding constraints to skew the stimulus in such a way to increase coverage for the
+          testcases. Tests can use it via factory override.
+
+        * [`src/tb/p4_adder/StmCoverage.svh`](src/tb/p4_adder/StmCoverage.svh) - extends Coverage
+          adding coverage for the testcases of the p4 adder verification plan.
+
+        * [`src/tb/p4_adder/Test.svh`](src/tb/p4_adder/Test.svh) - extends BaseTest adding coverage
+          and randomization constraints to the request transactions.
+
 ## Usage
 
 ## References
