@@ -110,6 +110,25 @@ Testcases:
 
 ## Included Files
 
+* [`run.sh`](run.sh) - *Step 2 - Introduction to the UVM* launcher
+
+* [`scripts`](scripts) - **Simulation automation**
+
+    * [`scripts/main.do`](scripts/main.do) - QuestaSim shell script, launched by run.sh. It
+      orchestrates: source files collection, dependency resolution, simulation run, coverage report
+      generation and the post-processing of the applied stimulus.
+
+    * [`scripts/findFiles.tcl`](scripts/findFiles.tcl) - recursive glob procedure.
+
+    * [`scripts/autocompile.tcl`](scripts/autocompile.tcl) - determines the compile order for a list
+      of hdl sources by executing the compilation command for each one of them in order, then
+      repeating for any compiles that fail until there are no more compile errors.
+
+    * [`scripts/log2csv.tcl`](scripts/log2csv.tcl) - parses the printer and the scoreboard logs.
+      The response transactions broadcasted to the printer are exported in comma-separated value format,
+      with the outcome of the comparison by the scoreboard. To ensure repeatability, the seed of the
+      simulation is listed at the top of the file.
+
 * [`src/rtl`](src/rtl) - **DUTs source files**
 
     * [`src/rtl/p4_adder`](src/rtl/p4_adder) - Pentium IV Adder sources
@@ -199,6 +218,29 @@ Testcases:
           and randomization constraints to the request transactions.
 
 ## Usage
+
+1. Change into the directory containing this file:
+
+    ```bash
+    cd /path/to/scatozza-step2
+    ```
+2. Invoke the launcher. Examples:
+
+    * **Pentium IV Adder**. After the execution of the following command, the outputs are saved
+      in `out/p4_adder-NBIT32-NBIT_PER_BLOCK4`.
+      
+      ```bash
+      ./run.sh -k 1
+      ```
+3. Examine the outputs:
+
+    * the logs: `printer.log`, `scoreboard.log` and `vsim.log`
+
+    * the output of logs post-processing: `extract.csv`
+
+    * the coverage report: `func_cover.rpt`
+
+For additional info, hit `./run.sh -h`.
 
 ## References
 
