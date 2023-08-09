@@ -101,7 +101,7 @@ class Scoreboard extends uvm_scoreboard;
     if (!xpected.compare(t)) begin
       n_errors++;
 
-      uvm_report_error("scoreboard", $sformatf("MISMATCH!\n Expected: %s\n Actual: %s",
+      uvm_report_error("scoreboard", $sformatf("MISMATCH!\n %s\n %s",
         xpected.convert2string(), t.convert2string() ));
     end else
       uvm_report_info("scoreboard", "MATCH!");
