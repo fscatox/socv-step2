@@ -232,6 +232,8 @@ Testcases:
       ```bash
       ./run.sh -k 1
       ```
+   For additional info, hit `./run.sh -h`.
+
 3. Examine the outputs:
 
     * the logs: `printer.log`, `scoreboard.log` and `vsim.log`
@@ -239,8 +241,6 @@ Testcases:
     * the output of logs post-processing: `extract.csv`
 
     * the coverage report: `func_cover.rpt`
-
-For additional info, hit `./run.sh -h`.
 
 ## References
 
