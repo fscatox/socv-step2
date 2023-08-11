@@ -4,7 +4,7 @@
  * Description       : recognizes the pin-level activity on the virtual
  *                     interface and turns it into a transaction that
  *                     gets broadcasted to environment components
-   *                   (every request generates a response)
+ *                     (every request generates a response)
  *
  * Author            : Fabio Scatozza <s315216@studenti.polito.it>
  *
@@ -28,15 +28,6 @@
 
 `ifndef MONITOR_SVH
 `define MONITOR_SVH
-
-/* to improve simulation performance, 2-state data types are used,
- * whereas the dut is mapped to SystemVerilog 4-state data types */
-`define ASSIGN_UNKNOWN_CHECK(lhs, rhs) \
-  do begin \
-    lhs = rhs; \
-    if ($isunknown(rhs)) \
-      uvm_report_warning("capture", "dut outputs unknown bits"); \
-  end while (0)
 
 class Monitor extends uvm_monitor;
   `uvm_component_utils(Monitor)

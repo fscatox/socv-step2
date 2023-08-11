@@ -8,7 +8,7 @@
  * Author            : Fabio Scatozza <s315216@studenti.polito.it>
  *
  * Date              : 05.08.2023
- * Last Modified Date: 08.08.2023
+ * Last Modified Date: 11.08.2023
  *
  * Copyright (c) 2023
  *
@@ -39,22 +39,43 @@ package p4_adder_pkg;
 
   typedef bit [NBIT-1:0] data_t; // speed up simulation, $isunknown() when reading from DUT
 
+  /* to improve simulation performance, 2-state data types are used,
+   * whereas the dut is mapped to SystemVerilog 4-state data types */
+  `define ASSIGN_UNKNOWN_CHECK(lhs, rhs) \
+    do begin \
+      lhs = rhs; \
+      if ($isunknown(rhs)) \
+        uvm_report_warning("capture", "dut outputs unknown bits"); \
+    end while (0)
+
   /* virtual interfaces to be used by Driver and Monitor */
   typedef virtual p4_adder_if.drv vif_drv_t;
   typedef virtual p4_adder_if.mon vif_mon_t;
 
+  /* configuration objects */
+  typedef struct {
+    // uvm_active_passive_enum`(is_active) is inherithed from uvm_agent class
+
+    // interface handle for the monitor and the driver
+    vif_drv_t vif_drv;
+    vif_mon_t vif_mon;
+
+    } agn_cfg_t;
+
   /* verification classes */
   `include "RqstTxn.svh"
   `include "RspTxn.svh"
-  `include "Sequencer.svh"
+  `include "../Sequencer.svh"
   `include "Driver.svh"
   `include "Monitor.svh"
-  `include "Agent.svh"
-  `include "Coverage.svh"
-  `include "Printer.svh"
+  `include "../Agent.svh"
+  `include "../Coverage.svh"
+  `include "../Printer.svh"
+  `include "../BaseScoreboard.svh"
   `include "Scoreboard.svh"
   `include "Environment.svh"
-  `include "RqstSequence.svh"
+  `include "../RqstSequence.svh"
+  `include "../SetupTest.svh"
   `include "BaseTest.svh"
 
   /* tests */

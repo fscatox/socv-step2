@@ -7,7 +7,7 @@
  * Author            : Fabio Scatozza <s315216@studenti.polito.it>
  *
  * Date              : 06.08.2023
- * Last Modified Date: 07.08.2023
+ * Last Modified Date: 11.08.2023
  *
  * Copyright (c) 2023
  *
@@ -26,15 +26,6 @@
 
 `ifndef AGENT_SVH
 `define AGENT_SVH
-
-typedef struct {
-  // uvm_active_passive_enum`(is_active) is inherithed from uvm_agent class
-
-  // interface handle for the monitor and the driver
-  vif_drv_t vif_drv;
-  vif_mon_t vif_mon;
-
-} agn_cfg_t;
 
 class Agent extends uvm_agent;
   `uvm_component_utils(Agent)
