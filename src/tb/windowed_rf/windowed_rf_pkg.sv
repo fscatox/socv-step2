@@ -63,18 +63,6 @@ package windowed_rf_pkg;
   typedef virtual windowed_rf_if.mmu vif_mmu_t;
   typedef virtual windowed_rf_if.mon vif_mon_t;
 
-  /* configuration objects */
-  typedef struct {
-    // uvm_active_passive_enum`(is_active) is inherithed from uvm_agent class
-
-    // interface handle for the monitor and the driver
-    vif_drv_t vif_drv;
-    vif_mmu_t vif_mmu;
-    vif_mon_t vif_mon;
-
-  } agn_cfg_t;
-
-
   /* verification classes */
   `include "RqstTxn.svh"
   `include "RqstAnlysTxn.svh"
@@ -83,7 +71,7 @@ package windowed_rf_pkg;
   `include "Mmu.svh"
   `include "Driver.svh"
   `include "Monitor.svh"
-  `include "../Agent.svh"
+  `include "Agent.svh"
   `include "../Coverage.svh"
   `include "../Printer.svh"
   `include "BehWindowedRf.svh"

@@ -97,14 +97,14 @@ class RqstTxn extends uvm_sequence_item;
 
     return {
       super.convert2string(), "\n",
-      " ", this.get_name(), "\n",
+      this.get_name(), "\n",
       $sformatf(" datain \t%x\n", datain),
       $sformatf(" rd1    \t%b\n", rd1),
       $sformatf(" rd2    \t%b\n", rd2),
       $sformatf(" wr     \t%b\n", wr),
-      $sformatf(" add_rd1 \t%x\n", add_rd1),
-      $sformatf(" add_rd2 \t%x\n", add_rd2),
-      $sformatf(" add_wr \t%x\n", add_wr),
+      $sformatf(" add_rd1 \t%0d\n", add_rd1),
+      $sformatf(" add_rd2 \t%0d\n", add_rd2),
+      $sformatf(" add_wr \t%0d\n", add_wr),
       $sformatf(" call   \t%b\n", call),
       $sformatf(" ret    \t%b\n", ret),
       $sformatf(" reset  \t%b\n", reset),

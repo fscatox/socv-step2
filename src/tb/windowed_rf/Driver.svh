@@ -40,7 +40,7 @@ class Driver extends uvm_driver#(RqstTxn);
     super.new(name, parent);
   endfunction
 
-  virtual function void build_phase(uvm_phase phase);
+  virtual function void end_of_elaboration_phase(uvm_phase phase);
     mmu = new("mmu", vif_mmu);
   endfunction
 

@@ -27,6 +27,16 @@
 `ifndef AGENT_SVH
 `define AGENT_SVH
 
+typedef struct {
+  // uvm_active_passive_enum`(is_active) is inherithed from uvm_agent class
+
+  // interface handle for the monitor and the driver
+  vif_drv_t vif_drv;
+  vif_mmu_t vif_mmu;
+  vif_mon_t vif_mon;
+
+} agn_cfg_t;
+
 class Agent extends uvm_agent;
   `uvm_component_utils(Agent)
 
@@ -72,6 +82,7 @@ class Agent extends uvm_agent;
     if (get_is_active() == UVM_ACTIVE) begin
       drv.seq_item_port.connect(seqr.seq_item_export);
       drv.vif = cfg.vif_drv;
+      drv.vif_mmu = cfg.vif_mmu;
 
       uvm_report_info("debug", "UVM_ACTIVE, connect", UVM_FULL);
     end

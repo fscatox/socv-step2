@@ -52,23 +52,13 @@ package p4_adder_pkg;
   typedef virtual p4_adder_if.drv vif_drv_t;
   typedef virtual p4_adder_if.mon vif_mon_t;
 
-  /* configuration objects */
-  typedef struct {
-    // uvm_active_passive_enum`(is_active) is inherithed from uvm_agent class
-
-    // interface handle for the monitor and the driver
-    vif_drv_t vif_drv;
-    vif_mon_t vif_mon;
-
-    } agn_cfg_t;
-
   /* verification classes */
   `include "RqstTxn.svh"
   `include "RspTxn.svh"
   `include "../Sequencer.svh"
   `include "Driver.svh"
   `include "Monitor.svh"
-  `include "../Agent.svh"
+  `include "Agent.svh"
   `include "../Coverage.svh"
   `include "../Printer.svh"
   `include "../BaseScoreboard.svh"
