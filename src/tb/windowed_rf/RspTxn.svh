@@ -82,7 +82,6 @@ class RspTxn extends RqstAnlysTxn;
       super.convert2string(), "\n",
       $sformatf(" out1 \t%x\n", out1),
       $sformatf(" out2 \t%x\n", out2),
-      $sformatf(" bypass \t%b\n", bypass),
       $sformatf(" fill \t%b\n", fill),
       $sformatf(" spill \t%b\n", spill)
     };

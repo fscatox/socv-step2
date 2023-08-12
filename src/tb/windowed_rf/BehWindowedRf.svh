@@ -30,10 +30,9 @@
 `ifndef BEHWINDOWEDRF_SVH
 `define BEHWINDOWEDRF_SVH
 
-class BehWindowedRf;
-
+class BehWindowedRf extends uvm_component;
+  `uvm_component_utils(BehWindowedRf)
   typedef data_t [NLOCALS] subset_t;
-  string name;
 
   /* storage */
   subset_t stack[$];
@@ -44,8 +43,11 @@ class BehWindowedRf;
   int signed locals_idx;
   int signed cwp, swp; // circular buffer
 
-  function new(string name);
-    this.name = name;
+  function new(string name, uvm_component parent);
+    super.new(name, parent);
+  endfunction
+
+  virtual function void build_phase(uvm_phase phase);
     reset();
   endfunction
 
@@ -285,17 +287,13 @@ class BehWindowedRf;
   endfunction : write
 
   function string convert2string();
-    string s = {name, "\n"};
+    string s = {get_name(), "\n"};
 
     foreach (globals[i])
-      $sformat(s, " globals[%0d]: %x\n", i, globals[i]);
+      $sformat(s, "%s globals[%0d]: %x\n", s, i, globals[i]);
 
-    foreach (stack[i]) begin
-
-      foreach (stack[i,j]) begin
-        $sformat(s, " stack[%0d][%0d]: %x\n", i, j, stack[i][j]);
-      end
-    end
+    foreach (stack[i,j])
+      $sformat(s, "%s stack[%0d][%0d]: %x\n", s, i, j, stack[i][j]);
 
     return s;
   endfunction : convert2string

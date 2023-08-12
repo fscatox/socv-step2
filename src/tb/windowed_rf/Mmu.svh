@@ -23,28 +23,31 @@
  * limitations under the License.
  */
 
-class Mmu;
+class Mmu extends uvm_component;
+  `uvm_component_utils(Mmu)
 
   /* set by the driver */
-  string name;
   vif_mmu_t vif;
 
   /* behavioral stack in main memory */
   data_t mem[$];
-  const byte unsigned cycles; // cycles required to fill/spill a single register
+  byte unsigned cycles; // cycles required to fill/spill a single register
 
-  function new(string name, vif_mmu_t vif);
-    this.name = name;
-    this.vif = vif;
+  function new(string name, uvm_component parent);
+    super.new(name, parent);
+  endfunction
+
+  virtual function void build_phase(uvm_phase phase);
 
     if (NBIT % NBIT_MEM)
-      uvm_report_warning(name, "rounding up cycles");
+      uvm_report_warning("build", "rounding up cycles");
 
     cycles = $ceil(real'(NBIT) / NBIT_MEM);
     uvm_report_info("debug", $sformatf("cycles: %0d", cycles), UVM_FULL);
-  endfunction : new
 
-  task run();
+  endfunction : build_phase
+
+  task run_phase(uvm_phase phase);
 
     /* fsm thread handler */
     process fsm_th;
@@ -121,7 +124,7 @@ class Mmu;
         while (!vif.mmu_cb.reset);
 
         if (fsm_th == null)
-          uvm_report_fatal(name, "null thread handler");
+          uvm_report_fatal("run", "null thread handler");
 
       end : synch_reset_p
 
@@ -137,6 +140,6 @@ class Mmu;
 
     end
 
-  endtask : run
+  endtask : run_phase
 
 endclass

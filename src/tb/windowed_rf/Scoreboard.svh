@@ -40,7 +40,7 @@ class Scoreboard extends BaseScoreboard;
 
   virtual function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    wrf = new("wrf");
+    wrf = BehWindowedRf::type_id::create("wrf", this);
   endfunction
 
   virtual function void generate_prediction(RspTxn t);

@@ -51,14 +51,14 @@ class Monitor extends uvm_monitor;
       capture(rqst2, rqst1); // rsp to rqst2, rqst1
       if (rqst2 != null) begin
         ap.write(rqst2);
-        uvm_report_info("capture", {"first edge: ", rqst2.convert2string()});
+        uvm_report_info("capture", {"first edge: ", rqst2.convert2string()}, UVM_FULL);
       end
 
       /* second edge */
       capture(rqst1, rqst2); // rsp to rqst1, rqst2
       if (rqst1 != null) begin
         ap.write(rqst1);
-        uvm_report_info("capture", {"second edge: ", rqst1.convert2string()});
+        uvm_report_info("capture", {"second edge: ", rqst1.convert2string()}, UVM_FULL);
       end
 
     end
@@ -100,7 +100,7 @@ class Monitor extends uvm_monitor;
       `ASSIGN_UNKNOWN_CHECK(rqst.mmu_done, vif.mon_cb.mmu_done);
     end else begin
       rqst = null; // pending fill / spill
-      uvm_report_info("capture", "bypass high: no request");
+      uvm_report_info("capture", "bypass high: no request", UVM_FULL);
     end
 
   endtask : capture

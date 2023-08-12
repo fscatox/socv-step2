@@ -40,31 +40,27 @@ class Driver extends uvm_driver#(RqstTxn);
     super.new(name, parent);
   endfunction
 
+  virtual function void build_phase(uvm_phase phase);
+    mmu = Mmu::type_id::create("mmu", this);
+  endfunction
+
   virtual function void end_of_elaboration_phase(uvm_phase phase);
-    mmu = new("mmu", vif_mmu);
+    mmu.vif = vif_mmu;
   endfunction
 
   task run_phase(uvm_phase phase);
 
-    fork
+    RqstTxn rqst; // overwritten in each iteration
 
-    begin : drv_p
-      RqstTxn rqst; // overwritten in each iteration
+    forever begin
+      seq_item_port.get_next_item(rqst);
+      uvm_report_info("debug", $sformatf("got item: %s", rqst.convert2string()), UVM_FULL);
 
-      forever begin
-        seq_item_port.get_next_item(rqst);
-        uvm_report_info("debug", $sformatf("got item: %s", rqst.convert2string()), UVM_FULL);
+      apply_item(rqst);
+      uvm_report_info("debug", $sformatf("applied item: %s", rqst.convert2string()), UVM_FULL);
 
-        apply_item(rqst);
-        uvm_report_info("debug", $sformatf("applied item: %s", rqst.convert2string()), UVM_FULL);
-
-        seq_item_port.item_done();
-      end
-    end : drv_p
-
-    mmu.run();
-
-    join
+      seq_item_port.item_done();
+    end
 
   endtask : run_phase
 
