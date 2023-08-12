@@ -155,8 +155,8 @@ Testcases:
       implement the comparison logic.
 
     * [`src/tb/p4_adder/Environment.svh`](src/tb/p4_adder/Environment.svh) - default
-      verification environment for the p4 adder. Test classes can customize it with both the
-      factory overrides and the environment configuration object.
+      verification environment. Test classes can customize it with both the factory overrides and
+      the environment configuration object.
 
     * [`src/tb/SetupTest.svh`](src/tb/SetupTest.svh) - handles the default configuration of the
       environment, but sequence management is left to child classes.
@@ -176,7 +176,7 @@ Testcases:
       stream of sequence items to feed the driver. Tests can override the type of request
       transaction through the factory.
 
-    * [`src/tb/p4_adder`](src/tb/p4_adder) - Pentium IV Adder additional sources
+    * [`src/tb/p4_adder`](src/tb/p4_adder) - **Pentium IV Adder additional sources**
 
         * [`src/tb/p4_adder/p4_adder_if.sv`](src/tb/p4_adder/p4_adder_if.sv) - bundles the DUT wires
           encapsulating synchronization information for the verification environment.
@@ -225,7 +225,7 @@ Testcases:
         * [`src/tb/p4_adder/Test.svh`](src/tb/p4_adder/Test.svh) - extends BaseTest adding coverage
           and randomization constraints to the request transactions.
 
-    * [`src/tb/p4_adder`](src/tb/p4_adder) - Windowed Register File additional sources
+    * [`src/tb/p4_adder`](src/tb/p4_adder) - **Windowed Register File additional sources**
 
         * [`src/tb/windowed_rf/windowed_rf_if.sv`](src/tb/windowed_rf/windowed_rf_if.sv) - bundles
           the dut wires encapsulating synchronization information for the verification environment.

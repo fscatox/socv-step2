@@ -1,9 +1,9 @@
 /**
  * File              : Environment.svh
  *
- * Description       : default verification environment for the p4 adder.
- *                     Test classes can customize it with both the factory
- *                     overrides and the environment configuration object.
+ * Description       : default verification environment. Test classes can
+ *                     customize it with both the factory overrides and
+ *                     the environment configuration object.
  *
  * Author            : Fabio Scatozza <s315216@studenti.polito.it>
  *
