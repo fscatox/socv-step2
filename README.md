@@ -27,10 +27,10 @@ SystemVerilog* step.
 In the *Introduction to SystemVerilog* step, I had the opportunity to begin tackling the
 shortcomings of the directed testing approach, getting familiar with some common principles of
 more advanced verification methodologies and their elected language, SystemVerilog. Most notably:
- 
+
 - *constrained-random stimuli*. Contrary to directed tests, which find bugs where they are expected
   to be, randomness allows to find bugs that were never anticipated; at the same time, constraints
-  are essential to ensure that the stimulus is valid and relevant to the DUT. 
+  are essential to ensure that the stimulus is valid and relevant to the DUT.
 
 - *functional coverage*. Once having switched to random tests, functional coverage becomes the metric
   for tracking progress in the verification plan, ensuring that all the intended features of the DUT
@@ -41,7 +41,7 @@ more advanced verification methodologies and their elected language, SystemVeril
   effectively managing complexity:
 
     - the abstraction level is raised up to the transaction level. The environment is structured in a
-      layered manner, composing simpler modules. 
+      layered manner, composing simpler modules.
 
     - language expressiveness limits analyzability, synthesizability and optimizability. Nonetheless,
       being verification the primary goal, HDLs make way for SystemVerilog and its convenient set of
@@ -64,7 +64,7 @@ As a glimpse of the used UVM features:
 
 - customization both via the factory and the configuration database
 
-- TLM and analysis communication 
+- TLM and analysis communication
 
 - id and severity specific logging to file
 
@@ -73,7 +73,7 @@ As a glimpse of the used UVM features:
 ## Verification Plan
 
 The verification plan is directly derived from the design specifications and encompasses the
-description of what features shall be exercised and the techniques to do so. 
+description of what features shall be exercised and the techniques to do so.
 
 Given that the DUTs are parameterized, a simple approach for verifying their correctness is to let
 the parameters be defined as compile-time options and repeat the simulations while changing them in
@@ -137,7 +137,46 @@ Testcases:
 
 * [`src/tb`](src/tb) - **UVM testbenches**
 
-    * [`src/tb/p4_adder`](src/tb/p4_adder) - Pentium IV Adder sources
+    * [`src/tb/p4_adder/Sequencer.svh`](src/tb/p4_adder/Sequencer.svh) - arbitrates the flow of
+      sequence items to the driver.
+
+    * [`src/tb/p4_adder/Coverage.svh`](src/tb/p4_adder/Coverage.svh) - base coverage collector
+      abstract class. Tests must use the factory to override with a child class that includes
+      stimulus-specific covergroups and implements the `sample()` callback.
+
+    * [`src/tb/p4_adder/Printer.svh`](src/tb/p4_adder/Printer.svh) - listens on the monitor
+      analysis port and prints the broadcasted transactions to the screen and to a file. Quiet
+      tests, which don't display transaction on the screen, can be developed by overriding the Printer
+      class with the BitBucket child class.
+
+    * [`src/tb/BaseScoreboard.svh`](src/tb/BaseScoreboard.svh) - listens on the monitor analysis
+      ports to validate DUT responses. The RspTxn encapsulate the request data, which is used to
+      compute the expected response. The comparison results are written to a file. Child classes must
+      implement the comparison logic.
+
+    * [`src/tb/p4_adder/Environment.svh`](src/tb/p4_adder/Environment.svh) - default
+      verification environment for the p4 adder. Test classes can customize it with both the
+      factory overrides and the environment configuration object.
+
+    * [`src/tb/SetupTest.svh`](src/tb/SetupTest.svh) - handles the default configuration of the
+      environment, but sequence management is left to child classes.
+
+        - the number of request transactions can be set by command line with `+n_txn=<txn number>`;
+          otherwise, it defaults to 100
+
+        - the printer file can be set by command line with `+printer_file=<file path>`;
+          otherwise it defaults to printer.log
+
+        - the scoreboard file can be set by command line with `+scoreboard_file=<file path>`;
+          otherwise it defaults to scoreboard.log
+
+        - to make the test quiet, pass the flag `+quiet`
+
+    * [`src/tb/p4_adder/RqstSequence.svh`](src/tb/p4_adder/RqstSequence.svh) - generates the
+      stream of sequence items to feed the driver. Tests can override the type of request
+      transaction through the factory.
+
+    * [`src/tb/p4_adder`](src/tb/p4_adder) - Pentium IV Adder additional sources
 
         * [`src/tb/p4_adder/p4_adder_if.sv`](src/tb/p4_adder/p4_adder_if.sv) - bundles the DUT wires
           encapsulating synchronization information for the verification environment.
@@ -148,9 +187,6 @@ Testcases:
 
         * [`src/tb/p4_adder/RspTxn.svh`](src/tb/p4_adder/RspTxn.svh) - response transaction
           extracted from the DUT by the monitor.
-
-        * [`src/tb/p4_adder/Sequencer.svh`](src/tb/p4_adder/Sequencer.svh) - arbitrates the flow of
-          sequence items to the driver.
 
         * [`src/tb/p4_adder/Driver.svh`](src/tb/p4_adder/Driver.svh) - translates incoming sequence
           items to pin wiggles, communicating with the DUT through the virtual interface.
@@ -163,41 +199,13 @@ Testcases:
           flexibility, it's extended from uvm_agent and configurable in either active or passive
           mode.
 
-        * [`src/tb/p4_adder/Coverage.svh`](src/tb/p4_adder/Coverage.svh) - base coverage collector
-          abstract class. Tests must use the factory to override with a child class that includes
-          stimulus-specific covergroups and implements the `sample()` callback.
+        * [`src/tb/p4_adder/Scoreboard.svh`](src/tb/p4_adder/Scoreboard.svh) - extends
+          BaseScoreboard specifying an analysis communication target and a predictor. A prediction
+          function is called inside the `write()` method of the analysis implementation.
 
-        * [`src/tb/p4_adder/Printer.svh`](src/tb/p4_adder/Printer.svh) - listens on the monitor
-          analysis port and prints the broadcasted transactions to the screen and to a file. Quiet
-          tests, which don't display transaction on the screen, can be developed by overriding the Printer
-          class with the BitBucket child class. 
-
-        * [`src/tb/p4_adder/Scoreboard.svh`](src/tb/p4_adder/Scoreboard.svh) - listens on the
-          monitor analysis ports and validates DUT responses. The RspTxn encapsulate the request
-          data, which is used to compute the expected response. The comparison results are written
-          to a file.
-
-        * [`src/tb/p4_adder/Environment.svh`](src/tb/p4_adder/Environment.svh) - default
-          verification environment for the p4 adder. Test classes can customize it with both the
-          factory overrides and the environment configuration object.
-
-        * [`src/tb/p4_adder/RqstSequence.svh`](src/tb/p4_adder/RqstSequence.svh) - generates the
-          stream of sequence items to feed the driver. Tests can override the type of request
-          transaction through the factory.
-
-        * [`src/tb/p4_adder/BaseTest.svh`](src/tb/p4_adder/BaseTest.svh) - handles the default
-          configuration of the environment and the common DUTies of child tests.
-
-            - the number of request transactions can be set by command line with
-              `+n_txn=<txn number>`; otherwise, it defaults to 100
- 
-            - the printer file can be set by command line with `+printer_file=<file path>`;
-              otherwise it defaults to *printer.log*
-              
-            - the scoreboard file can be set by command line with `+scoreboard_file=<file path>`;
-              otherwise it defaults to *scoreboard.log*
-
-            - to make the test quiet, pass the flag `+quiet`
+        * [`src/tb/p4_adder/BaseTest.svh`](src/tb/p4_adder/BaseTest.svh) - extends SetupTest adding
+          a basic sequence that generates a stream of random request transactions for debugging
+          purposes; the environment is kept unchanged, thus the coverage collector is not allocated.
 
         * [`src/tb/p4_adder/p4_adder_pkg.sv`](src/tb/p4_adder/p4_adder_pkg.sv) - namespace for the
           p4 adder UVM-based testbench. The DUT generics are set at compile time defining the macros
@@ -217,6 +225,93 @@ Testcases:
         * [`src/tb/p4_adder/Test.svh`](src/tb/p4_adder/Test.svh) - extends BaseTest adding coverage
           and randomization constraints to the request transactions.
 
+    * [`src/tb/p4_adder`](src/tb/p4_adder) - Windowed Register File additional sources
+
+        * [`src/tb/windowed_rf/windowed_rf_if.sv`](src/tb/windowed_rf/windowed_rf_if.sv) - bundles
+          the dut wires encapsulating synchronization information for the verification environment.
+
+        * [`src/tb/windowed_rf/RqstTxn.svh`](src/tb/windowed_rf/RqstTxn.svh) - base request
+          transaction translated by the driver to pin wiggles. Tests can use the factory to override
+          with a child class that includes stimulus-specific constraints.
+
+        * [`src/tb/windowed_rf/RqstAnlysTxn.svh`](src/tb/windowed_rf/RqstAnlysTxn.svh) - extends
+          RqstTxn adding DUT inputs to be used for analysis purposes but discarded for output
+          validation. The scoreboard won't verify the dut-mmu interaction cycles directly, but only
+          through read/write operations and fill/spill signals.
+
+        * [`src/tb/windowed_rf/RspTxn.svh`](src/tb/windowed_rf/RspTxn.svh) - response transaction
+          extracted from the DUT by the monitor. The bypass field is used by the monitor to
+          determine when the sequence resumes execution. In case of call and ret operations,
+          out1 and out2 are not taken into account for the comparison, unless reset is high.
+
+        * [`src/tb/windowed_rf/Mmu.svh`](src/tb/windowed_rf/Mmu.svh) - handles filling/spilling
+          requests from the DUT, implementing the FSM described in the documentation in the run phase
+          task. The synchronous reset is handled by restarting the fsm thread.
+
+        * [`src/tb/windowed_rf/Driver.svh`](src/tb/windowed_rf/Driver.svh) -translates incoming
+          sequence items to pin wiggles, communicating with the DUT through the virtual interface.
+          It instantiates the Mmu component to reply to DUT spill and fill requests. Instead of
+          using a configuration object to pass the virtual interface down the hierarchy, the driver
+          configures the child mmu component in the end of elaboration phase. The request
+          transactions are applied at each falling edge: if the bypass signal is high, and the
+          operation is not a reset, the driver skips the cycle.
+
+        * [`src/tb/windowed_rf/Monitor.svh`](src/tb/windowed_rf/Monitor.svh) - recognizes the
+          pin-level activity on the virtual interface and turns it into a transaction that gets
+          broadcasted to environment components. The monitor activates on rising edges:
+
+            - it samples the new request, applied to the dut by the driver in the
+              previous falling edge;
+
+            - it samples the response for the request that was sampled the cycle before.
+              Once the response is available, it's broadcasted.
+
+              Request sampling is suspended while the bypass signal is active, because the driver
+              waits for the register file to become available before applying new requests, with
+              the exception of reset operations. In the case of a call operation, the response must
+              be sampled not one cycle but two cycles after the request, which is the one during
+              which the rf may raise spill.
+
+        * [`src/tb/windowed_rf/Agent.svh`](src/tb/windowed_rf/Agent.svh) - p4 adder agent. To add
+          flexibility, it's extended from uvm_agent and configurable in either active or passive
+          mode
+
+        * [`src/tb/windowed_rf/BehWindowedRf.svh`](src/tb/windowed_rf/BehWindowedRf.svh) - the
+          windowed rf is modelled as a stack (SystemVerilog queue) of register sets, as explained
+          in the SPARC Architecture Manual, whereas fill and spill are generated treating the
+          stack as a circular buffer, with two pointers to detect the full condition.
+
+        * [`src/tb/windowed_rf/Scoreboard.svh`](src/tb/windowed_rf/Scoreboard.svh) - extends
+          BaseScoreboard specifying an analysis communication target and a predictor. Notice that
+          the driver suspends applying items while the bypass signal is high.
+
+        * [`src/tb/windowed_rf/ResetSequence.svh`](src/tb/windowed_rf/ResetSequence.svh) - generates
+          some sequence items to feed the driver and bring the dut registers in a known state.
+
+        * [`src/tb/windowed_rf/BaseTest.svh`](src/tb/windowed_rf/BaseTest.svh) - extends SetupTest
+          to manage the initialization of the dut with a reset sequence. Once it terminates its
+          execution, the actual testing sequence is started, which generates a stream of fully random
+          items, for early debugging of the UVM testbench. The environment is kept as by default,
+          without a coverage collector.
+
+        * [`src/tb/windowed_rf/windowed_rf_pkg.sv`](src/tb/windowed_rf/windowed_rf_pkg.sv) -
+          namespace for the windowed register file UVM-based testbench. The dut and mmu generics are
+          set at compile time defining the following macros by command line
+
+            - *NBIT*, the parallelism of the rf
+
+            - *NBIT_MEM*, the minimum addressable width of the main memory
+
+            - *NGLOBALS*, global registers per window
+
+            - *NLOCALS*, local registers per window
+
+            - *NWINDOWS*, number of windows
+
+        * [`src/tb/windowed_rf/windowed_rf_top.sv`](src/tb/windowed_rf/windowed_rf_top.sv) -
+          instantiates the dut and the free running clock, then it sets up and invokes the test
+          specified by command line with "+UVM_TESTNAME=<test name>"
+
 ## Usage
 
 1. Change into the directory containing this file:
@@ -228,7 +323,7 @@ Testcases:
 
     * **Pentium IV Adder**. After the execution of the following command, the outputs are saved
       in `out/p4_adder-NBIT32-NBIT_PER_BLOCK4`.
-      
+
       ```bash
       ./run.sh -k 1
       ```

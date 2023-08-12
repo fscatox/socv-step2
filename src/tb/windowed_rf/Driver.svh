@@ -3,7 +3,15 @@
  *
  * Description       : translates incoming sequence items to pin wiggles,
  *                     communicating with the DUT through the virtual
- *                     interface
+ *                     interface. It instantiates the Mmu component to
+ *                     reply to DUT spill and fill requests. Instead of
+ *                     using a configuration object to pass the virtual
+ *                     interface down the hierarchy, the driver configures
+ *                     the child mmu component in the end_of_elaboration
+ *                     phase. The request transactions are applied at each
+ *                     falling edge: if the bypass signal is high, and the
+ *                     operation is not a reset, the driver skips the
+ *                     cycle.
  *
  * Author            : Fabio Scatozza <s315216@studenti.polito.it>
  *

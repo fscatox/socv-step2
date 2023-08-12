@@ -3,7 +3,20 @@
  *
  * Description       : recognizes the pin-level activity on the virtual
  *                     interface and turns it into a transaction that
- *                     gets broadcasted to environment components
+ *                     gets broadcasted to environment components. The
+ *                     monitor activates on rising edges:
+ *                       - it samples the new request, applied to the dut
+ *                         by the driver in the previous falling edge;
+ *                       - it samples the response for the request that was
+ *                         sampled the cycle before. Once the response is
+ *                         available, it's broadcasted.
+ *                      Request sampling is suspended while the bypass
+ *                      signal is active, because the driver waits for the
+ *                      register file to become available before applying
+ *                      new requests, with the exception of reset operations.
+ *                      In the case of a call operation, the response must be
+ *                      sampled not one cycle but two cycles after the request,
+ *                      which is the one during which the rf may raise spill.
  *
  * Author            : Fabio Scatozza <s315216@studenti.polito.it>
  *

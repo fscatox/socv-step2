@@ -2,10 +2,10 @@
  * File              : RqstAnlysTxn.svh
  *
  * Description       : extends RqstTxn adding DUT inputs to be used for
- *                     analysis purposes but discarded for the comparison.
+ *                     analysis purposes but discarded for output validation.
  *                     The scoreboard won't verify the dut-mmu interaction
  *                     cycles directly, but only through read/write
- *                     operations.
+ *                     operations and fill/spill signals.
  *
  * Author            : Fabio Scatozza <s315216@studenti.polito.it>
  *

@@ -1,7 +1,10 @@
 /**
  * File              : Mmu.svh
  *
- * Description       : handles filling/spilling requests from the dut.
+ * Description       : handles filling/spilling requests from the DUT,
+ *                     implementing the FSM described in the documentation
+ *                     in the run_phase task. The synchronous reset is
+ *                     handled by restarting the fsm thread.
  *
  * Author            : Fabio Scatozza <s315216@studenti.polito.it>
  *
