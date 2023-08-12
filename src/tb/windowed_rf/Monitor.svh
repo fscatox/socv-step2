@@ -34,6 +34,9 @@ class Monitor extends uvm_monitor;
   vif_mon_t vif; // set by the agent
   uvm_analysis_port#(RspTxn) ap; // to broadcast responses (includes response)
 
+  /* timing exception */
+  bit skip_rsp;
+
   function new (string name, uvm_component parent);
     super.new(name, parent);
   endfunction
@@ -44,6 +47,7 @@ class Monitor extends uvm_monitor;
 
   task run_phase(uvm_phase phase);
     RspTxn rqst1, rqst2;
+    skip_rsp = 0;
 
     forever begin
 
@@ -67,9 +71,6 @@ class Monitor extends uvm_monitor;
 
   task capture(inout RspTxn rsp, output RspTxn rqst);
 
-    /* try to allocate the request (no factory)*/
-    rqst = new("rqst");
-
     /* synchronize on the sampling active edge */
     @(vif.mon_cb);
 
@@ -82,25 +83,46 @@ class Monitor extends uvm_monitor;
       `ASSIGN_UNKNOWN_CHECK(rsp.spill, vif.mon_cb.spill);
     end
 
-    /* check bypass */
-    `ASSIGN_UNKNOWN_CHECK(rqst.bypass, vif.mon_cb.bypass);
-    if (!rqst.bypass) begin
-      `ASSIGN_UNKNOWN_CHECK(rqst.reset, vif.mon_cb.reset);
-      `ASSIGN_UNKNOWN_CHECK(rqst.enable, vif.mon_cb.enable);
-      `ASSIGN_UNKNOWN_CHECK(rqst.rd1, vif.mon_cb.rd1);
-      `ASSIGN_UNKNOWN_CHECK(rqst.rd2, vif.mon_cb.rd2);
-      `ASSIGN_UNKNOWN_CHECK(rqst.wr, vif.mon_cb.wr);
-      `ASSIGN_UNKNOWN_CHECK(rqst.add_rd1, vif.mon_cb.add_rd1);
-      `ASSIGN_UNKNOWN_CHECK(rqst.add_rd2, vif.mon_cb.add_rd2);
-      `ASSIGN_UNKNOWN_CHECK(rqst.add_wr, vif.mon_cb.add_wr);
-      `ASSIGN_UNKNOWN_CHECK(rqst.datain, vif.mon_cb.datain);
-      `ASSIGN_UNKNOWN_CHECK(rqst.call, vif.mon_cb.call);
-      `ASSIGN_UNKNOWN_CHECK(rqst.ret, vif.mon_cb.ret);
-      `ASSIGN_UNKNOWN_CHECK(rqst.mmu_data, vif.mon_cb.mmu_data);
-      `ASSIGN_UNKNOWN_CHECK(rqst.mmu_done, vif.mon_cb.mmu_done);
+    if (skip_rsp) begin
+      skip_rsp = 0;
+      rqst = rsp; // forward the previous request
+      rsp = null; // discard the current response
     end else begin
-      rqst = null; // pending fill / spill
-      uvm_report_info("capture", "bypass high: no request", UVM_FULL);
+
+      /* allocate the new request */
+      rqst = new("rqst");
+
+      /* if bypass is high the driver is paused */
+      `ASSIGN_UNKNOWN_CHECK(rqst.bypass, vif.mon_cb.bypass);
+
+      if (!rqst.bypass) begin
+        `ASSIGN_UNKNOWN_CHECK(rqst.reset, vif.mon_cb.reset);
+        `ASSIGN_UNKNOWN_CHECK(rqst.enable, vif.mon_cb.enable);
+        `ASSIGN_UNKNOWN_CHECK(rqst.rd1, vif.mon_cb.rd1);
+        `ASSIGN_UNKNOWN_CHECK(rqst.rd2, vif.mon_cb.rd2);
+        `ASSIGN_UNKNOWN_CHECK(rqst.wr, vif.mon_cb.wr);
+        `ASSIGN_UNKNOWN_CHECK(rqst.add_rd1, vif.mon_cb.add_rd1);
+        `ASSIGN_UNKNOWN_CHECK(rqst.add_rd2, vif.mon_cb.add_rd2);
+        `ASSIGN_UNKNOWN_CHECK(rqst.add_wr, vif.mon_cb.add_wr);
+        `ASSIGN_UNKNOWN_CHECK(rqst.datain, vif.mon_cb.datain);
+        `ASSIGN_UNKNOWN_CHECK(rqst.call, vif.mon_cb.call);
+        `ASSIGN_UNKNOWN_CHECK(rqst.ret, vif.mon_cb.ret);
+        `ASSIGN_UNKNOWN_CHECK(rqst.mmu_data, vif.mon_cb.mmu_data);
+        `ASSIGN_UNKNOWN_CHECK(rqst.mmu_done, vif.mon_cb.mmu_done);
+
+        /* if the call generates a spill, an additional cycle is required to
+         * sample the response. In case of a ret, the fill can be sampled the
+         * subsequent cycle. In either case, the problem of skipping request
+         * sampling while the bypass is high is handled in the else branch */
+        if (rqst.call)
+          skip_rsp = 1;
+
+      end else begin
+        /* no request */
+        rqst = null;
+        uvm_report_info("capture", "bypass high: no request", UVM_FULL);
+      end
+
     end
 
   endtask : capture

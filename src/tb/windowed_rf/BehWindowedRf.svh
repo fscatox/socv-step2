@@ -74,7 +74,7 @@ class BehWindowedRf extends uvm_component;
   function bit call();
     subset_t zero_subset;
     uvm_report_info("debug",
-      $sformatf("call: @ locals_idx %0d, cwp %0d, swp $0d", locals_idx, cwp, swp), UVM_FULL);
+      $sformatf("call: @ locals_idx %0d, cwp %0d, swp %0d", locals_idx, cwp, swp), UVM_FULL);
 
     /* add local and out */
     locals_idx += 2;
@@ -91,7 +91,7 @@ class BehWindowedRf extends uvm_component;
     end
 
     uvm_report_info("debug",
-      $sformatf("call: now locals_idx %0d, cwp %0d, swp $0d", locals_idx, cwp, swp), UVM_FULL);
+      $sformatf("call: now locals_idx %0d, cwp %0d, swp %0d", locals_idx, cwp, swp), UVM_FULL);
     return 0;
   endfunction : call
 
