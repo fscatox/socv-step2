@@ -3,7 +3,7 @@
 # File              : run.sh
 # Author            : Fabio Scatozza <s315216@studenti.polito.it>
 # Date              : 09.08.2023
-# Last Modified Date: 09.08.2023
+# Last Modified Date: 14.08.2023
 #
 # Copyright (c) 2023
 #
@@ -25,7 +25,7 @@ script_name="./${0##*/}"
 top_modules=('p4_adder_top' 'windowed_rf_top')
 
 # tests
-tests=('FullTest' 'NoCnstNoCovTest' 'Test')
+tests=('FullTest' 'NoCnstNoCovTest' 'FullTest')
 
 # workspace cleanup
 cleanup() {
@@ -71,9 +71,11 @@ Keys:
 
 
   3    top module     : windowed_rf
-       test           : src/tb/Test.svh
-                        customized stimulus
+       test           : src/tb/windowed_rf/FullTest.svh
+                        test-sequence dependent stimulus
                         coverage collection for testcases
+       note            : n_txn is per test sequence, for a total of
+                        3*n_txn actual request items
        compile-options: nbit, nbit_mem, nglobals, nlocals, nwindows
                         default: 32,8,8,8,4
 
@@ -84,9 +86,6 @@ Compile Options Format:
 Plusargs: forwarded to the vsim call
 
   +n_txn=<txn number>             number of transactions
-                                  default: 
-                                    - p4_adder      100
-                                    - windowed_rf   1000
 
   +quiet                          suppress printer messages to screen
 
