@@ -63,15 +63,15 @@ package p4_adder_pkg;
   `include "../Printer.svh"
   `include "../BaseScoreboard.svh"
   `include "Scoreboard.svh"
-  `include "Environment.svh"
-  `include "../RqstSequence.svh"
-  `include "../SetupTest.svh"
-  `include "BaseTest.svh"
-
-  /* tests */
+  `include "../Environment.svh"
+  `include "TopSequence.svh"
+  `include "../BaseTest.svh"
   `include "CnstRqstTxn.svh"
   `include "StmCoverage.svh"
-  `include "../Test.svh"
+
+  /* tests */
+  `include "NoCnstNoCovTest.svh"
+  `include "FullTest.svh"
 
 endpackage
 

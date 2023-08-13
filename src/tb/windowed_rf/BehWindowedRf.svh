@@ -66,7 +66,7 @@ class BehWindowedRf extends uvm_component;
     cwp = 0;
     swp = NWINDOWS-1;
 
-    uvm_report_info("debug", "reset done", UVM_FULL);
+    uvm_report_info("debug", "reset done", UVM_HIGH);
 
   endfunction : reset
 

@@ -1,11 +1,14 @@
 /**
- * File              : SetupTest.svh
+ * File              : BaseTest.svh
  *
  * Description       : handles the default configuration of the environment
- *                     (sequence management is left to child classes)
- *                       - the number of request transactions can be set
- *                         by command line with "+n_txn=<txn number>";
- *                         otherwise, it defaults to 100
+ *                     and the execution of the top-hierarchy sequence
+ *                     "TopSequence". Child tests can call "configure_env()"
+ *                     to perform last minute tweaking. Additional
+ *                     customization parameters can be passed as plusargs:
+ *                       - the number of request transactions per test
+ *                         sequence can be set by command line with
+ *                         "+n_txn=<txn number>"; otherwise, it defaults to 100
  *                       - the printer file can be set by command line with
  *                         "+printer_file=<file path>"; otherwise it defaults
  *                         to printer.log
@@ -17,7 +20,7 @@
  * Author            : Fabio Scatozza <s315216@studenti.polito.it>
  *
  * Date              : 06.08.2023
- * Last Modified Date: 11.08.2023
+ * Last Modified Date: 13.08.2023
  *
  * Copyright (c) 2023
  *
@@ -34,18 +37,23 @@
  * limitations under the License.
  */
 
-`ifndef SETUPTEST_SVH
-`define SETUPTEST_SVH
+`ifndef BASETEST_SVH
+`define BASETEST_SVH
 
-virtual class SetupTest extends uvm_test;
-  `uvm_component_utils(SetupTest)
+virtual class BaseTest extends uvm_test;
+  `uvm_component_utils(BaseTest)
 
   Environment env;
   env_cfg_t env_cfg;
+  TopSequence seq;
 
   function new(string name, uvm_component parent);
     super.new(name, parent);
   endfunction
+
+  /* configuration for the environment and the agent by extended tests */
+  virtual function void configure_env();
+  endfunction : configure_env
 
   virtual function void build_phase(uvm_phase phase);
     vif_drv_t vif_drv;
@@ -108,26 +116,31 @@ virtual class SetupTest extends uvm_test;
   endfunction : build_phase
 
   virtual function void end_of_elaboration_phase(uvm_phase phase);
+    seq = TopSequence::type_id::create("seq");
 
-    if (uvm_report_enabled(UVM_FULL))
+    if (uvm_report_enabled(UVM_HIGH))
       uvm_top.print_topology();
 
-    if (uvm_report_enabled(UVM_FULL))
+    if (uvm_report_enabled(UVM_HIGH))
       uvm_config_db#(int)::dump();
 
   endfunction : end_of_elaboration_phase
 
   virtual function void start_of_simulation_phase(uvm_phase phase);
 
-    if (uvm_report_enabled(UVM_FULL))
+    if (uvm_report_enabled(UVM_HIGH))
       uvm_factory::get().print();
 
   endfunction : start_of_simulation_phase
 
-  /* configuration for the environment and the agent by extended tests */
-  virtual function void configure_env();
-  endfunction : configure_env
+  task run_phase(uvm_phase phase);
+    phase.raise_objection(this);
+
+    seq.start(env.agn.seqr);
+
+    phase.drop_objection(this);
+  endtask : run_phase
 
 endclass
 
-`endif // SETUPTEST_SVH
+`endif // BASETEST_SVH

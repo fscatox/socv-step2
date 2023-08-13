@@ -2,14 +2,20 @@
  * File              : CnstRqstTxn.svh
  *
  * Description       : extends RqstTxn adding constraints to ensure the
- *                     validity of the stimulus, while skewing it in such a
- *                     way to increase coverage for the testcases. Tests can
- *                     use it via factory override.
+ *                     validity of the stimulus. Before randomizing
+ *                     an object, a "profile" must have been set by calling
+ *                     "set_profile()" with the following arguments:
+ *                       - call_ret_weight, weight for call/ret operations
+ *                       - call_ret_enhanced, weight for the call/ret
+ *                         operation after having already issued it
+ *                       - reset_weight
+ *                       - reset_enhanced
+ *                     Tests can use it via factory override.
  *
  * Author            : Fabio Scatozza <s315216@studenti.polito.it>
  *
  * Date              : 12.08.2023
- * Last Modified Date: 12.08.2023
+ * Last Modified Date: 13.08.2023
  *
  * Copyright (c) 2023
  *
@@ -32,10 +38,12 @@
 class CnstRqstTxn extends RqstTxn;
   `uvm_object_utils(CnstRqstTxn)
 
-  `define CALL_RET_WEIGHT   10
-  `define RESET_WEIGHT      3
-  `define CALL_RET_ENHANCED 25
-  `define RESET_ENHANCED    25
+  /* randomization "profile" */
+  byte unsigned CALL_RET_WEIGHT,
+                RESET_WEIGHT;
+
+  byte unsigned CALL_RET_ENHANCED,
+                RESET_ENHANCED;
 
   /* call/return balancing:
    * count how many returns are possible */
@@ -45,19 +53,39 @@ class CnstRqstTxn extends RqstTxn;
   byte unsigned call_weight, ret_weight, reset_weight;
   bit call_h, ret_h, reset_h;
 
+
+  function void set_profile(
+    byte unsigned call_ret_weight,
+    byte unsigned call_ret_enhanced,
+    byte unsigned reset_weight,
+    byte unsigned reset_enhanced);
+
+    CALL_RET_WEIGHT = call_ret_weight;
+    CALL_RET_ENHANCED = call_ret_enhanced;
+    RESET_WEIGHT = reset_weight;
+    RESET_ENHANCED = reset_enhanced;
+
+    uvm_report_info("randomize", {
+      "profile:\n",
+      $sformatf(" call_ret_weight:  \t%0d\n", CALL_RET_WEIGHT),
+      $sformatf(" call_ret_enhanced:\t%0d\n", CALL_RET_ENHANCED),
+      $sformatf(" reset_weight:     \t%0d\n", RESET_WEIGHT),
+      $sformatf(" reset_enhanced:   \t%0d\n", RESET_ENHANCED)}, UVM_HIGH);
+
+    /* initialization */
+    call_weight  = CALL_RET_WEIGHT;
+    ret_weight   = CALL_RET_WEIGHT;
+    reset_weight = RESET_WEIGHT;
+
+  endfunction : set_profile
+
   function new(string name = "CnstRqstTxn");
     super.new(name);
     can_return = 0;
 
-    call_weight  = `CALL_RET_WEIGHT;
     call_h       = 0;
-
-    ret_weight   = `CALL_RET_WEIGHT;
     ret_h        = 0;
-
-    reset_weight = `RESET_WEIGHT;
     reset_h      = 0;
-
   endfunction
 
   function void post_randomize();
@@ -74,28 +102,28 @@ class CnstRqstTxn extends RqstTxn;
     end
 
     /* op repetition */
-    if (reset_h) begin
+    if (reset_h) begin  // twice in a row?
       reset_h = 0;
-      reset_weight = `RESET_WEIGHT;
+      reset_weight = RESET_WEIGHT;
     end else if (reset) begin
       reset_h = 1;
-      reset_weight = `RESET_ENHANCED;
+      reset_weight = RESET_ENHANCED; // change weight to make it more likely
     end
 
     if (call_h) begin
       call_h = 0;
-      call_weight = `CALL_RET_WEIGHT;
+      call_weight = CALL_RET_WEIGHT;
     end else if (!reset && call) begin
       call_h = 1;
-      call_weight = `CALL_RET_ENHANCED;
+      call_weight = CALL_RET_ENHANCED;
     end
 
     if (ret_h) begin
       ret_h = 0;
-      ret_weight = `CALL_RET_WEIGHT;
+      ret_weight = CALL_RET_WEIGHT;
     end else if (!reset && !call && ret) begin
       ret_h = 1;
-      ret_weight = `CALL_RET_ENHANCED;
+      ret_weight = CALL_RET_ENHANCED;
     end
 
   endfunction : post_randomize
@@ -107,20 +135,17 @@ class CnstRqstTxn extends RqstTxn;
     };
   }
 
-  constraint sparingly_c {
-
-    reset dist {
-     0 := (100-reset_weight),
-     1 := reset_weight
-    };
+  constraint frequency_c {
 
     call dist {
       0 := (100-call_weight),
       1 := call_weight
     };
-  }
 
-  constraint frequently_c {
+    reset dist {
+      0 := (100-reset_weight),
+      1 := reset_weight
+    };
 
     enable dist {
       0 := 3,

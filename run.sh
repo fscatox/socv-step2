@@ -25,7 +25,7 @@ script_name="./${0##*/}"
 top_modules=('p4_adder_top' 'windowed_rf_top')
 
 # tests
-tests=('Test' 'BaseTest' 'Test')
+tests=('FullTest' 'NoCnstNoCovTest' 'Test')
 
 # workspace cleanup
 cleanup() {
@@ -55,7 +55,7 @@ Keys:
   choose top module and test
 
   1    top module     : p4 adder
-       test           : src/tb/Test.svh
+       test           : src/tb/p4_adder/FullTest.svh
                         customized stimulus
                         coverage collection for testcases
        compile-options: nbit, nbit_per_block
@@ -63,7 +63,7 @@ Keys:
 
 
   2    top module     : p4 adder
-       test           : src/tb/p4_adder/BaseTest.svh
+       test           : src/tb/p4_adder/NoCnstNoCovTest.svh
                         default environment (no coverage collection)
                         no randomization constraints
        compile-options: nbit, nbit_per_block
@@ -90,18 +90,18 @@ Plusargs: forwarded to the vsim call
 
   +quiet                          suppress printer messages to screen
 
-  +UVM_VERBOSITY=UVM_FULL         enable debugging messages
+  +UVM_VERBOSITY=UVM_HIGH         enable debugging messages
                                     - uvm report summaries
                                     - uvm testbench topology
                                     - uvm config db dump
                                     - factory configuration
-                                    - info messages by components
+                                    - critical messages by components
 
-                =UVM_HIGH         enable a subset of debugging messages
+                =UVM_FULL         additional components debugging messages
 
 Examples:
   $script_name -k 1
-  $script_name -k 1 -c 32,8 +n_txn=10 +UVM_VERBOSITY=UVM_FULL
+  $script_name -k 1 -c 64,8 +n_txn=10 +UVM_VERBOSITY=UVM_HIGH
   $script_name -k 3 -c 32,8,8,8,4 
 "
 }

@@ -62,6 +62,9 @@ class Monitor extends uvm_monitor;
     RspTxn rqst1, rqst2;
     skip_rsp = 0;
 
+    /* skip init */
+    @(vif.mon_cb);
+
     forever begin
 
       /* first edge */

@@ -79,14 +79,14 @@ package windowed_rf_pkg;
   `include "Scoreboard.svh"
   `include "../Environment.svh"
   `include "ResetSequence.svh"
-  `include "../RqstSequence.svh"
-  `include "../SetupTest.svh"
-  `include "BaseTest.svh"
+  `include "CnstRqstTxn.svh"
+  `include "TestSequence.svh"
+  `include "TopSequence.svh"
+  `include "../BaseTest.svh"
+  `include "StmCoverage.svh"
 
   /* tests */
-  `include "CnstRqstTxn.svh"
-  `include "StmCoverage.svh"
-  `include "../Test.svh"
+  `include "FullTest.svh"
 
 endpackage
 

@@ -41,12 +41,11 @@ class Mmu extends uvm_component;
   endfunction
 
   virtual function void build_phase(uvm_phase phase);
-
-    if (NBIT % NBIT_MEM)
-      uvm_report_warning("build", "rounding up cycles");
-
     cycles = $ceil(real'(NBIT) / NBIT_MEM);
     uvm_report_info("debug", $sformatf("cycles: %0d", cycles), UVM_FULL);
+
+    if (NBIT % NBIT_MEM)
+      uvm_report_warning("build", $sformatf("rounding up cycles: %0d", cycles));
 
   endfunction : build_phase
 

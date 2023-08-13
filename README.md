@@ -192,8 +192,10 @@ Testcases:
       Test classes can customize it with both the factory overrides and the environment
       configuration object.
 
-    * [`src/tb/SetupTest.svh`](src/tb/SetupTest.svh) - handles the default configuration of the
-      environment, but sequence management is left to child classes.
+    * [`src/tb/BaseTest.svh`](src/tb/BaseTest.svh) - handles the default configuration of the
+      environment, and the execution of the top-hierarchy sequence TopSequence. Child classes
+      can call `configure_env()` to perform last minute tweaking. Additional customization parameters
+      can be passed as plusargs:
 
         - the number of request transactions can be set by command line with
           `+n_txn=<txn number>`; otherwise, it defaults to 100
@@ -205,13 +207,6 @@ Testcases:
           otherwise it defaults to scoreboard.log
 
         - to make the test quiet, pass the flag `+quiet`
-
-    * [`src/tb/RqstSequence.svh`](src/tb/RqstSequence.svh) - generates the stream of sequence
-      items to feed the driver. Tests can override the type of request transaction through the
-      factory.
-
-    * [`src/tb/Test.svh`](src/tb/Test.svh) - extends BaseTest adding coverage and randomization
-      constraints to the request transactions.
 
     * [`src/tb/p4_adder`](src/tb/p4_adder) - **Pentium IV Adder additional sources**
 
@@ -240,9 +235,24 @@ Testcases:
           BaseScoreboard specifying an analysis communication target and a predictor. A prediction
           function is called inside the `write()` method of the analysis implementation.
 
-        * [`src/tb/p4_adder/BaseTest.svh`](src/tb/p4_adder/BaseTest.svh) - extends SetupTest adding
-          a basic sequence that generates a stream of random request transactions for debugging
-          purposes; the environment is kept unchanged, thus the coverage collector is not allocated.
+        * [`src/tb/p4_adder/TopSequence.svh`](src/tb/p4_adder/TopSequence.svh) - generates the stream
+          of sequence items to feed the driver. Tests can override the type of request transaction
+          through the factory.
+
+        * [`src/tb/p4_adder/NoCnstNoCovTest.svh`](src/tb/p4_adder/NoCnstNoCovTest.svh) - extends
+          BaseTest to clarify its purpose. The TopSequence type is not overridden, thus the generated
+          transactions are fully unconstrained. Moreover, it's kept the environment default of having
+          no coverage collector.
+
+        * [`src/tb/p4_adder/CnstRqstTxn.svh`](src/tb/p4_adder/CnstRqstTxn.svh) - extends RqstTxn
+          adding constraints to skew the stimulus in such a way to increase coverage for the
+          testcases. Tests can use it via factory override.
+
+        * [`src/tb/p4_adder/StmCoverage.svh`](src/tb/p4_adder/StmCoverage.svh) - extends Coverage
+          adding coverage for the testcases of the p4 adder verification plan.
+        
+        * [`src/tb/p4_adder/FullTest.svh`](src/tb/p4_adder/FullTest.svh) - extends BaseTest adding
+          coverage and randomization constraints to the request transactions.
 
         * [`src/tb/p4_adder/p4_adder_pkg.sv`](src/tb/p4_adder/p4_adder_pkg.sv) - namespace for the
           p4 adder UVM-based testbench. The DUT generics are set at compile time defining the macros
@@ -252,14 +262,8 @@ Testcases:
           DUT and the free running clock, then it sets up and invokes the test specified by command
           line with `+UVM_TESTNAME=<test name>`
 
-        * [`src/tb/p4_adder/CnstRqstTxn.svh`](src/tb/p4_adder/CnstRqstTxn.svh) - extends RqstTxn
-          adding constraints to skew the stimulus in such a way to increase coverage for the
-          testcases. Tests can use it via factory override.
 
-        * [`src/tb/p4_adder/StmCoverage.svh`](src/tb/p4_adder/StmCoverage.svh) - extends Coverage
-          adding coverage for the testcases of the p4 adder verification plan.
-
-    * [`src/tb/p4_adder`](src/tb/p4_adder) - **Windowed Register File additional sources**
+    * [`src/tb/windowed_rf`](src/tb/windowed_rf) - **Windowed Register File additional sources**
 
         * [`src/tb/windowed_rf/windowed_rf_if.sv`](src/tb/windowed_rf/windowed_rf_if.sv) - bundles
           the dut wires encapsulating synchronization information for the verification environment.
@@ -273,14 +277,16 @@ Testcases:
           RqstTxn adding monitor-to-scoreboard analysis fields required for late-correction of
           scoreboard predictions. This is because the behavioral DUT that generates the predictions is
           instantiated in the scoreboard and runs at each incoming response. Instead, a reset request can
-          cut short pending call/return operations. In addition, mmu outputs are sampled as part of the
-          request to the DUT, but having made the choice to have a single analysis communication channel
-          from the monitor to scoreboard, printer and coverage collector, there's no way to separate
-          requests from response samples, which would be necessary to properly examine the mmu/dut
-          interaction. That being said, once having made sure that the behavioral mmu implemented in the
-          testbench complies to the specifications, errors in the DUT due to the interaction with the mmu
-          would still be caught, even though without additional info to help designers. That is, the
-          scoreboard doesn't verify the dut-mmu interaction cycles directly, but only through read/write
+          cut short pending call/return operations. 
+
+          In addition, mmu outputs are sampled as part of the request to the DUT, but having made the
+          choice to have a single analysis communication channel from the monitor to scoreboard,
+          printer and coverage collector, there's no way to separate requests from response samples,
+          which would be necessary to properly examine the mmu/dut interaction. That being said,
+          once having made sure that the behavioral mmu implemented in the testbench complies with
+          the specifications, errors in the DUT due to the interaction with the mmu would still be
+          caught, even though without additional info to help designers. That is, the scoreboard
+          doesn't verify the dut-mmu interaction cycles directly, but only through read/write
           operations and fill/spill signals.
 
         * [`src/tb/windowed_rf/RspTxn.svh`](src/tb/windowed_rf/RspTxn.svh) - response transaction
@@ -330,13 +336,31 @@ Testcases:
           the driver suspends applying items while the bypass signal is high.
 
         * [`src/tb/windowed_rf/ResetSequence.svh`](src/tb/windowed_rf/ResetSequence.svh) - generates
-          some sequence items to feed the driver and bring the dut registers in a known state.
+          some sequence items to feed the driver and bring the dut registers in a known state. It's not
+          counted in the `+n_txn` requests.
 
-        * [`src/tb/windowed_rf/BaseTest.svh`](src/tb/windowed_rf/BaseTest.svh) - extends SetupTest
-          to manage the initialization of the dut with a reset sequence. Once it terminates its
-          execution, the actual testing sequence is started, which generates a stream of fully random
-          items, for early debugging of the UVM testbench. The environment is kept as by default,
-          without a coverage collector.
+        * [`src/tb/windowed_rf/CnstRqstTxn.svh`](src/tb/windowed_rf/CnstRqstTxn.svh) - extends
+          RqstTxn adding constraints to ensure the validity of the stimulus. Before randomizing an object, a "profile" must have been set by calling `set_profile()` with the following arguments:
+            - *call_ret_weight*, weight for call/ret operations
+            - *call_ret_enhanced*, weight for the call/ret operation after having already issued it
+            - *reset_weight*
+            - *reset_enhanced*
+          Tests can use it via factory override.
+
+        * [`src/tb/windowed_rf/TestSequence.svh`](src/tb/windowed_rf/TestSequence.svh) - 
+          FullTest-specific sequence. It generates a stream of CnstRqstTxn items, specifying as 
+          randomization parameters the one set at compile time as class templates.
+
+        * [`src/tb/windowed_rf/TopSequence.svh`](src/tb/windowed_rf/TopSequence.svh) - assembles
+          the desired stream of sequence items by configuring and calling sub-sequences for FullTest.
+          This class is test-specific, and additional tests can override it with the factory.
+
+        * [`src/tb/windowed_rf/StmCoverage.svh`](src/tb/windowed_rf/StmCoverage.svh) - extends
+          Coverage adding coverage for the testcases of the windowed rf verification plan. 
+
+        * [`src/tb/windowed_rf/FullTest.svh`](src/tb/windowed_rf/FullTest.svh) - extends BaseTest
+          adding coverage and randomization constraints to the request transactions. Notice that
+          with this test, "+n_txn" is the number of transactions per test sequence.
 
         * [`src/tb/windowed_rf/windowed_rf_pkg.sv`](src/tb/windowed_rf/windowed_rf_pkg.sv) -
           namespace for the windowed register file UVM-based testbench. The dut and mmu generics are
@@ -356,12 +380,6 @@ Testcases:
           instantiates the dut and the free running clock, then it sets up and invokes the test
           specified by command line with "+UVM_TESTNAME=<test name>"
 
-        * [`src/tb/windowed_rf/CnstRqstTxn.svh`](src/tb/windowed_rf/CnstRqstTxn.svh) - extends
-          RqstTxn adding constraints to ensure the validity of the stimulus, while skewing it in such a
-          way to increase coverage for the testcases. Tests can use it via factory override. 
-
-        * [`src/tb/windowed_rf/StmCoverage.svh`](src/tb/windowed_rf/StmCoverage.svh) - extends
-          Coverage adding coverage for the testcases of the windowed rf verification plan. 
 
 ## Usage
 

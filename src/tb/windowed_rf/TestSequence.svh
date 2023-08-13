@@ -1,14 +1,15 @@
 /**
- * File              : RqstSequence.svh
+ * File              : TestSequence.svh
  *
- * Description       : generates the stream of sequence items to feed the
- *                     driver. Tests can override the type of request
- *                     transaction through the factory.
+ * Description       : FullTest-specific sequence. It generates a stream of
+ *                     CnstRqstTxn items, specifying as randomization
+ *                     parameters the one set at compile time as class
+ *                     templates.
  *
  * Author            : Fabio Scatozza <s315216@studenti.polito.it>
  *
- * Date              : 06.08.2023
- * Last Modified Date: 07.08.2023
+ * Date              : 11.08.2023
+ * Last Modified Date: 13.08.2023
  *
  * Copyright (c) 2023
  *
@@ -25,16 +26,21 @@
  * limitations under the License.
  */
 
-`ifndef RQSTSEQUENCE_SVH
-`define RQSTSEQUENCE_SVH
+`ifndef TESTSEQUENCE_SVH
+`define TESTSEQUENCE_SVH
 
-class RqstSequence extends uvm_sequence#(RqstTxn);
-  `uvm_object_utils(RqstSequence)
+class TestSequence#(
+  byte unsigned CALL_RET_WEIGHT, byte unsigned CALL_RET_ENHANCED,
+  byte unsigned RESET_WEIGHT, byte unsigned RESET_ENHANCED) extends uvm_sequence#(RqstTxn);
 
-  RqstTxn rqst;
-  int unsigned n_txn; /* optionally set by the test */
+  typedef TestSequence#(
+    CALL_RET_WEIGHT, CALL_RET_ENHANCED, RESET_WEIGHT, RESET_ENHANCED) this_type;
+  `uvm_object_param_utils(this_type)
 
-  function new(string name = "RqstSequence");
+  CnstRqstTxn rqst;
+  int unsigned n_txn;
+
+  function new(string name = "TestSequence");
     super.new(name);
   endfunction
 
@@ -45,8 +51,12 @@ class RqstSequence extends uvm_sequence#(RqstTxn);
     else
       uvm_report_info("debug", "got n_txn", UVM_FULL);
 
-    rqst = RqstTxn::type_id::create("rqst");
-    uvm_report_info("debug", $sformatf("created object (%s) rqst", rqst.get_type_name()), UVM_FULL);
+    /* the sequence is executed 3 times by TopSequence */
+    n_txn /= 3;
+
+    /* create a request of the overridden type */
+    rqst = CnstRqstTxn::type_id::create("rqst");
+    rqst.set_profile(CALL_RET_WEIGHT, CALL_RET_ENHANCED, RESET_WEIGHT, RESET_ENHANCED);
 
     repeat (n_txn) begin
       start_item(rqst); // initiate handshake
@@ -65,4 +75,5 @@ class RqstSequence extends uvm_sequence#(RqstTxn);
 
 endclass
 
-`endif // RQSTSEQUENCE_SVH
+`endif // TESTSEQUENCE_SVH
+

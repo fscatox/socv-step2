@@ -87,7 +87,7 @@ virtual class BaseScoreboard extends uvm_scoreboard;
     set_report_severity_id_action(UVM_ERROR, "scoreboard", UVM_DISPLAY | UVM_COUNT | UVM_LOG);
     set_report_severity_id_action(UVM_INFO, "scoreboard", UVM_LOG);
 
-    if (uvm_report_enabled(UVM_FULL))
+    if (uvm_report_enabled(UVM_HIGH))
       dump_report_state();
 
   endfunction : end_of_elaboration_phase
@@ -114,7 +114,7 @@ virtual class BaseScoreboard extends uvm_scoreboard;
 
     if (n_total == n_xpected) begin
       ok_to_end = 1;
-      uvm_report_info("debug", "ok_to_end", UVM_FULL);
+      uvm_report_info("debug", "ok_to_end", UVM_HIGH);
     end
 
   endfunction : write
@@ -125,7 +125,7 @@ virtual class BaseScoreboard extends uvm_scoreboard;
 
       fork begin
         wait(ok_to_end);
-        uvm_report_info("debug", "phase_ready_to_end(): waked up", UVM_FULL);
+        uvm_report_info("debug", "phase_ready_to_end(): waked up", UVM_HIGH);
 
         phase.drop_objection(this, "scoreboard: n_total == n_xpected");
       end join_none

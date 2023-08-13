@@ -1,13 +1,15 @@
 /**
- * File              : ResetSequence.svh
+ * File              : NoCnstNoCovTest.svh
  *
- * Description       : generates some sequence items to feed the driver and
- *                     bring the dut registers in a known state. It's not
- *                     counted in the "+n_txn" requests.
+ * Description       : extends BaseTest to clarify its purpose. The
+ *                     TopSequence type is not overridden, thus the generated
+ *                     transactions are fully unconstrained. Moreover, it's
+ *                     kept the environment default of having no coverage
+ *                     collector.
  *
  * Author            : Fabio Scatozza <s315216@studenti.polito.it>
  *
- * Date              : 11.08.2023
+ * Date              : 08.08.2023
  * Last Modified Date: 13.08.2023
  *
  * Copyright (c) 2023
@@ -25,27 +27,16 @@
  * limitations under the License.
  */
 
-`ifndef RESETSEQUENCE_SVH
-`define RESETSEQUENCE_SVH
+`ifndef NOCNSTNOCOVTEST_SVH
+`define NOCNSTNOCOVTEST_SVH
 
-class ResetSequence extends uvm_sequence#(RqstTxn);
-  `uvm_object_utils(ResetSequence)
+class NoCnstNoCovTest extends BaseTest;
+  `uvm_component_utils(NoCnstNoCovTest)
 
-  function new(string name = "ResetSequence");
-    super.new(name);
+  function new(string name, uvm_component parent);
+    super.new(name, parent);
   endfunction
-
-  task body();
-
-    RqstTxn reset_rqst = RqstTxn::type_id::create("reset_rqst");
-
-    start_item(reset_rqst);
-    reset_rqst.reset = 1;
-    finish_item(reset_rqst);
-
-  endtask : body
 
 endclass
 
-`endif // RESETSEQUENCE_SVH
-
+`endif // NOCNSTNOCOVTEST_SVH

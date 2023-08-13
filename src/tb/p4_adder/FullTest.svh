@@ -1,5 +1,5 @@
 /**
- * File              : Test.svh
+ * File              : FullTest.svh
  *
  * Description       : extends BaseTest adding coverage and randomization
  *                     constraints to the request transactions.
@@ -24,18 +24,17 @@
  * limitations under the License.
  */
 
-`ifndef TEST_SVH
-`define TEST_SVH
+`ifndef FULLTEST_SVH
+`define FULLTEST_SVH
 
-class Test extends BaseTest;
-  `uvm_component_utils(Test)
+class FullTest extends BaseTest;
+  `uvm_component_utils(FullTest)
 
   function new(string name, uvm_component parent);
     super.new(name, parent);
   endfunction
 
   virtual function void configure_env();
-    super.configure_env();
 
     /* stimulus customization */
     RqstTxn::type_id::set_type_override(CnstRqstTxn::get_type());
@@ -48,4 +47,4 @@ class Test extends BaseTest;
 
 endclass
 
-`endif // TEST_SVH
+`endif // FULLTEST_SVH

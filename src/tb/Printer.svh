@@ -62,7 +62,7 @@ class Printer extends uvm_subscriber#(RspTxn);
     set_report_id_file("printer", fd);
     set_report_id_action("printer", UVM_DISPLAY | UVM_LOG);
 
-    if (uvm_report_enabled(UVM_FULL))
+    if (uvm_report_enabled(UVM_HIGH))
       dump_report_state();
 
   endfunction : end_of_elaboration_phase
@@ -95,7 +95,7 @@ class BitBucket extends Printer;
     // disable display for printer messages
     set_report_id_action("printer", UVM_LOG);
 
-    if (uvm_report_enabled(UVM_FULL))
+    if (uvm_report_enabled(UVM_HIGH))
       dump_report_state();
 
   endfunction : end_of_elaboration_phase

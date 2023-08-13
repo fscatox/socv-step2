@@ -15,7 +15,7 @@
  *                     response samples, which would be necessary to properly
  *                     examine the mmu/dut interaction. That being said, once
  *                     having made sure that the behavioral mmu implemented in
- *                     the testbench complies to the specifications, errors
+ *                     the testbench complies with the specifications, errors
  *                     in the DUT due to the interaction with the mmu would
  *                     still be caught, even though without additional info to
  *                     help designers. That is, the scoreboard doesn't verify
