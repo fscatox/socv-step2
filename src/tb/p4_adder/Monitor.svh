@@ -9,7 +9,7 @@
  * Author            : Fabio Scatozza <s315216@studenti.polito.it>
  *
  * Date              : 05.08.2023
- * Last Modified Date: 07.08.2023
+ * Last Modified Date: 13.08.2023
  *
  * Copyright (c) 2023
  *
@@ -51,7 +51,7 @@ class Monitor extends uvm_monitor;
     forever begin
       capture(rsp); // allocate a new transaction
 
-      uvm_report_info("debug", $sformatf("captured: %s", rsp.convert2string()), UVM_FULL);
+      uvm_report_info("debug", $sformatf("captured: %s", rsp.convert2string()), UVM_HIGH);
 
       ap.write(rsp); // non-blocking but the transaction won't be overwritten
     end

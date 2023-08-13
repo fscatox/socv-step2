@@ -8,7 +8,7 @@
  * Author            : Fabio Scatozza <s315216@studenti.polito.it>
  *
  * Date              : 06.08.2023
- * Last Modified Date: 06.08.2023
+ * Last Modified Date: 13.08.2023
  *
  * Copyright (c) 2023
  *
@@ -79,7 +79,6 @@ class Environment extends uvm_env;
     end
 
     prt = Printer::type_id::create("prt", this);
-    uvm_report_info("debug", $sformatf("created object (%s) prt", prt.get_type_name()), UVM_FULL);
 
   endfunction : build_phase
 

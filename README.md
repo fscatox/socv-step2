@@ -81,6 +81,8 @@ the set of interest.
 
 ### Pentium IV Adder
 
+Parameterization test:
+
     for i in {3, ..., 7}
       for j in {2, ..., i-1}
         define NBIT = 2^i
@@ -106,6 +108,38 @@ Testcases:
 
 
 ### Windowed Register File
+
+Typical parameterization:
+
+    NBIT = 32
+    NBIT_MEM = 8
+    NGLOBALS = 8
+    NLOCALS = 8
+    NWINDOWS = 4 // to increase spill/fill events
+
+Testcases:
+
+1. execute all operations. In case of read and write operations, execution means
+   that the operation must be issued and must not be masked by a reset, a call or 
+   a return.
+
+2. read and write operations
+     1. disabled by *rd1*, *rd2* or *wr* while enabled by *enable*
+     2. enabled by *rd1*, *rd2* or *wr* but disabled by *enable*
+     3. issued but masked by a reset, a call or a return
+     4. read-before-write, distinguishing between read port 1 and 2
+
+3. call and return operations
+     1. issued together
+     2. issued with a reset
+     3. execute twice in a row
+     4. generate a spill
+     5. generate a fill
+
+4. reset operation
+     1. execute twice in a row
+     2. execute all operations, except for reset and return, after a reset
+     3. execute all operations, except for reset, before a reset
 
 
 ## Included Files
@@ -137,32 +171,32 @@ Testcases:
 
 * [`src/tb`](src/tb) - **UVM testbenches**
 
-    * [`src/tb/p4_adder/Sequencer.svh`](src/tb/p4_adder/Sequencer.svh) - arbitrates the flow of
-      sequence items to the driver.
+    * [`src/tb/Sequencer.svh`](src/tb/Sequencer.svh) - arbitrates the flow of sequence items to the
+      driver.
 
-    * [`src/tb/p4_adder/Coverage.svh`](src/tb/p4_adder/Coverage.svh) - base coverage collector
-      abstract class. Tests must use the factory to override with a child class that includes
-      stimulus-specific covergroups and implements the `sample()` callback.
+    * [`src/tb/Coverage.svh`](src/tb/Coverage.svh) - base coverage collector abstract class.
+      Tests must use the factory to override with a child class that includes stimulus-specific
+      covergroups and implements the `sample()` callback.
 
-    * [`src/tb/p4_adder/Printer.svh`](src/tb/p4_adder/Printer.svh) - listens on the monitor
-      analysis port and prints the broadcasted transactions to the screen and to a file. Quiet
-      tests, which don't display transaction on the screen, can be developed by overriding the Printer
-      class with the BitBucket child class.
+    * [`src/tb/Printer.svh`](src/tb/Printer.svh) - listens on the monitor analysis port and
+      prints the broadcasted transactions to the screen and to a file. Quiet tests, which don't
+      display transaction on the screen, can be developed by overriding the Printer class with the
+      BitBucket child class.
 
-    * [`src/tb/BaseScoreboard.svh`](src/tb/BaseScoreboard.svh) - listens on the monitor analysis
-      ports to validate DUT responses. The RspTxn encapsulate the request data, which is used to
-      compute the expected response. The comparison results are written to a file. Child classes must
-      implement the comparison logic.
+    * [`src/tb/BaseScoreboard.svh`](src/tb/BaseScoreboard.svh) - listens on the monitor
+      analysis ports to validate DUT responses. The RspTxn encapsulate the request data, which
+      is used to compute the expected response. The comparison results are written to a file. Child
+      classes must implement the comparison logic.
 
-    * [`src/tb/p4_adder/Environment.svh`](src/tb/p4_adder/Environment.svh) - default
-      verification environment. Test classes can customize it with both the factory overrides and
-      the environment configuration object.
+    * [`src/tb/Environment.svh`](src/tb/Environment.svh) - default verification environment.
+      Test classes can customize it with both the factory overrides and the environment
+      configuration object.
 
     * [`src/tb/SetupTest.svh`](src/tb/SetupTest.svh) - handles the default configuration of the
       environment, but sequence management is left to child classes.
 
-        - the number of request transactions can be set by command line with `+n_txn=<txn number>`;
-          otherwise, it defaults to 100
+        - the number of request transactions can be set by command line with
+          `+n_txn=<txn number>`; otherwise, it defaults to 100
 
         - the printer file can be set by command line with `+printer_file=<file path>`;
           otherwise it defaults to printer.log
@@ -172,9 +206,12 @@ Testcases:
 
         - to make the test quiet, pass the flag `+quiet`
 
-    * [`src/tb/p4_adder/RqstSequence.svh`](src/tb/p4_adder/RqstSequence.svh) - generates the
-      stream of sequence items to feed the driver. Tests can override the type of request
-      transaction through the factory.
+    * [`src/tb/RqstSequence.svh`](src/tb/RqstSequence.svh) - generates the stream of sequence
+      items to feed the driver. Tests can override the type of request transaction through the
+      factory.
+
+    * [`src/tb/Test.svh`](src/tb/Test.svh) - extends BaseTest adding coverage and randomization
+      constraints to the request transactions.
 
     * [`src/tb/p4_adder`](src/tb/p4_adder) - **Pentium IV Adder additional sources**
 
@@ -222,9 +259,6 @@ Testcases:
         * [`src/tb/p4_adder/StmCoverage.svh`](src/tb/p4_adder/StmCoverage.svh) - extends Coverage
           adding coverage for the testcases of the p4 adder verification plan.
 
-        * [`src/tb/p4_adder/Test.svh`](src/tb/p4_adder/Test.svh) - extends BaseTest adding coverage
-          and randomization constraints to the request transactions.
-
     * [`src/tb/p4_adder`](src/tb/p4_adder) - **Windowed Register File additional sources**
 
         * [`src/tb/windowed_rf/windowed_rf_if.sv`](src/tb/windowed_rf/windowed_rf_if.sv) - bundles
@@ -232,12 +266,22 @@ Testcases:
 
         * [`src/tb/windowed_rf/RqstTxn.svh`](src/tb/windowed_rf/RqstTxn.svh) - base request
           transaction translated by the driver to pin wiggles. Tests can use the factory to override
-          with a child class that includes stimulus-specific constraints.
+          with a child class that includes stimulus-specific constraints. Calling `get_ops()` the
+          fields specifying the requested operations are returned in a packed struct.
 
-        * [`src/tb/windowed_rf/RqstAnlysTxn.svh`](src/tb/windowed_rf/RqstAnlysTxn.svh) - extends
-          RqstTxn adding DUT inputs to be used for analysis purposes but discarded for output
-          validation. The scoreboard won't verify the dut-mmu interaction cycles directly, but only
-          through read/write operations and fill/spill signals.
+        * [`src/tb/windowed_rf/RqstAnlysTxn.svh`](src/tb/windowed_rf/RqstAnlysTxn.svh) - extends 
+          RqstTxn adding monitor-to-scoreboard analysis fields required for late-correction of
+          scoreboard predictions. This is because the behavioral DUT that generates the predictions is
+          instantiated in the scoreboard and runs at each incoming response. Instead, a reset request can
+          cut short pending call/return operations. In addition, mmu outputs are sampled as part of the
+          request to the DUT, but having made the choice to have a single analysis communication channel
+          from the monitor to scoreboard, printer and coverage collector, there's no way to separate
+          requests from response samples, which would be necessary to properly examine the mmu/dut
+          interaction. That being said, once having made sure that the behavioral mmu implemented in the
+          testbench complies to the specifications, errors in the DUT due to the interaction with the mmu
+          would still be caught, even though without additional info to help designers. That is, the
+          scoreboard doesn't verify the dut-mmu interaction cycles directly, but only through read/write
+          operations and fill/spill signals.
 
         * [`src/tb/windowed_rf/RspTxn.svh`](src/tb/windowed_rf/RspTxn.svh) - response transaction
           extracted from the DUT by the monitor. The bypass field is used by the monitor to
@@ -312,6 +356,13 @@ Testcases:
           instantiates the dut and the free running clock, then it sets up and invokes the test
           specified by command line with "+UVM_TESTNAME=<test name>"
 
+        * [`src/tb/windowed_rf/CnstRqstTxn.svh`](src/tb/windowed_rf/CnstRqstTxn.svh) - extends
+          RqstTxn adding constraints to ensure the validity of the stimulus, while skewing it in such a
+          way to increase coverage for the testcases. Tests can use it via factory override. 
+
+        * [`src/tb/windowed_rf/StmCoverage.svh`](src/tb/windowed_rf/StmCoverage.svh) - extends
+          Coverage adding coverage for the testcases of the windowed rf verification plan. 
+
 ## Usage
 
 1. Change into the directory containing this file:
@@ -322,10 +373,17 @@ Testcases:
 2. Invoke the launcher. Examples:
 
     * **Pentium IV Adder**. After the execution of the following command, the outputs are saved
-      in `out/p4_adder-NBIT32-NBIT_PER_BLOCK4`.
+      in `out/p4_adder/NBIT32-NBIT_PER_BLOCK4`.
 
       ```bash
       ./run.sh -k 1
+      ```
+ 
+    * **Windowed Register File**. After the execution of the following command, the outputs are
+      saved in `out/windowed_rf/NBIT32-NBIT_MEM8-NGLOBALS8-NLOCALS8-NWINDOWS4`.
+
+      ```bash
+      ./run.sh -k 3
       ```
    For additional info, hit `./run.sh -h`.
 

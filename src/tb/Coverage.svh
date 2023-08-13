@@ -9,7 +9,7 @@
  * Author            : Fabio Scatozza <s315216@studenti.polito.it>
  *
  * Date              : 06.08.2023
- * Last Modified Date: 08.08.2023
+ * Last Modified Date: 13.08.2023
  *
  * Copyright (c) 2023
  *
@@ -46,7 +46,7 @@ virtual class Coverage extends uvm_subscriber#(RspTxn);
 
     // sample local transaction
     sample();
-    uvm_report_info("debug", "write(): sampled", UVM_FULL);
+    uvm_report_info("debug", "write(): sampled", UVM_HIGH);
 
   endfunction : write
 

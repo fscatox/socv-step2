@@ -21,7 +21,7 @@
  * Author            : Fabio Scatozza <s315216@studenti.polito.it>
  *
  * Date              : 11.08.2023
- * Last Modified Date: 11.08.2023
+ * Last Modified Date: 13.08.2023
  *
  * Copyright (c) 2023
  *
@@ -68,14 +68,14 @@ class Monitor extends uvm_monitor;
       capture(rqst2, rqst1); // rsp to rqst2, rqst1
       if (rqst2 != null) begin
         ap.write(rqst2);
-        uvm_report_info("capture", {"first edge: ", rqst2.convert2string()}, UVM_FULL);
+        uvm_report_info("capture", {"first edge: ", rqst2.convert2string()}, UVM_HIGH);
       end
 
       /* second edge */
       capture(rqst1, rqst2); // rsp to rqst1, rqst2
       if (rqst1 != null) begin
         ap.write(rqst1);
-        uvm_report_info("capture", {"second edge: ", rqst1.convert2string()}, UVM_FULL);
+        uvm_report_info("capture", {"second edge: ", rqst1.convert2string()}, UVM_HIGH);
       end
 
     end
@@ -83,33 +83,71 @@ class Monitor extends uvm_monitor;
   endtask : run_phase
 
   task capture(inout RspTxn rsp, output RspTxn rqst);
+    bit reset_rqst, bypass_rqst;
+    bit rqst_aborted = 0;
+
+    rqst = null;
 
     /* synchronize on the sampling active edge */
     @(vif.mon_cb);
 
+    /* new request is a reset ? */
+    `ASSIGN_UNKNOWN_CHECK(reset_rqst, vif.mon_cb.reset);
+
     /* is there a pending request ? */
     if (rsp != null) begin
-      rsp.set_name("rsp");
-      `ASSIGN_UNKNOWN_CHECK(rsp.out1, vif.mon_cb.out1);
-      `ASSIGN_UNKNOWN_CHECK(rsp.out2, vif.mon_cb.out2);
-      `ASSIGN_UNKNOWN_CHECK(rsp.fill, vif.mon_cb.fill);
-      `ASSIGN_UNKNOWN_CHECK(rsp.spill, vif.mon_cb.spill);
+      uvm_report_info("capture", "pending request", UVM_HIGH);
+
+      /* is it marked to be skipped ? */
+      if (skip_rsp) begin
+        skip_rsp = 0;
+        uvm_report_info("capture", "got skip_rsp", UVM_HIGH);
+
+        if (reset_rqst) begin
+          /* send the response back marking the request as aborted */
+          rqst_aborted = 1;
+          uvm_report_info("capture", "skip_rsp: overridden by reset request", UVM_HIGH);
+        end else begin
+          rqst = rsp; // forward the previous request
+          rsp = null; // discard the current response
+          uvm_report_info("capture", "skip_rsp: no response, forwarding request", UVM_HIGH);
+        end
+
+      end
+
+      /* sample the response if not forwarded */
+      if (rsp != null) begin
+        rsp.set_name("rsp");
+        `ASSIGN_UNKNOWN_CHECK(rsp.out1, vif.mon_cb.out1);
+        `ASSIGN_UNKNOWN_CHECK(rsp.out2, vif.mon_cb.out2);
+        `ASSIGN_UNKNOWN_CHECK(rsp.fill, vif.mon_cb.fill);
+        `ASSIGN_UNKNOWN_CHECK(rsp.spill, vif.mon_cb.spill);
+
+        /* if it's a fill and the new request is a reset,
+         * send the response back marking the request as aborted */
+         rsp.aborted = rqst_aborted || (rsp.fill && reset_rqst);
+       end
     end
 
-    if (skip_rsp) begin
-      skip_rsp = 0;
-      rqst = rsp; // forward the previous request
-      rsp = null; // discard the current response
-    end else begin
 
-      /* allocate the new request */
-      rqst = new("rqst");
+    /* is the request being forwarded? If not, sample it */
+    if (rqst == null) begin
 
-      /* if bypass is high the driver is paused */
-      `ASSIGN_UNKNOWN_CHECK(rqst.bypass, vif.mon_cb.bypass);
+      /* if bypass is high the driver is paused,
+       * unless a reset request was issued  */
+      `ASSIGN_UNKNOWN_CHECK(bypass_rqst, vif.mon_cb.bypass);
 
-      if (!rqst.bypass) begin
-        `ASSIGN_UNKNOWN_CHECK(rqst.reset, vif.mon_cb.reset);
+      if (reset_rqst || !bypass_rqst) begin
+
+        uvm_report_info("capture",
+          $sformatf("bypass %b, reset %b: sampling new request",
+            bypass_rqst, reset_rqst), UVM_HIGH);
+
+        /* allocate the new request */
+        rqst = new("rqst");
+
+        rqst.bypass = bypass_rqst;
+        rqst.reset = reset_rqst;
         `ASSIGN_UNKNOWN_CHECK(rqst.enable, vif.mon_cb.enable);
         `ASSIGN_UNKNOWN_CHECK(rqst.rd1, vif.mon_cb.rd1);
         `ASSIGN_UNKNOWN_CHECK(rqst.rd2, vif.mon_cb.rd2);
@@ -127,14 +165,13 @@ class Monitor extends uvm_monitor;
          * sample the response. In case of a ret, the fill can be sampled the
          * subsequent cycle. In either case, the problem of skipping request
          * sampling while the bypass is high is handled in the else branch */
-        if (rqst.call)
+        if (!rqst.reset && rqst.call) begin
           skip_rsp = 1;
+          uvm_report_info("capture", "bypass low: call detected, setting skip_rsp", UVM_HIGH);
+        end
 
-      end else begin
-        /* no request */
-        rqst = null;
-        uvm_report_info("capture", "bypass high: no request", UVM_FULL);
-      end
+      end else // !reset && bypass
+        uvm_report_info("capture", "bypass high: no new request", UVM_HIGH);
 
     end
 

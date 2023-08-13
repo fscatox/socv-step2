@@ -84,6 +84,9 @@ package windowed_rf_pkg;
   `include "BaseTest.svh"
 
   /* tests */
+  `include "CnstRqstTxn.svh"
+  `include "StmCoverage.svh"
+  `include "../Test.svh"
 
 endpackage
 

@@ -74,7 +74,7 @@ class BehWindowedRf extends uvm_component;
   function bit call();
     subset_t zero_subset;
     uvm_report_info("debug",
-      $sformatf("call: @ locals_idx %0d, cwp %0d, swp %0d", locals_idx, cwp, swp), UVM_FULL);
+      $sformatf("call: @ locals_idx %0d, cwp %0d, swp %0d", locals_idx, cwp, swp), UVM_HIGH);
 
     /* add local and out */
     locals_idx += 2;
@@ -86,7 +86,7 @@ class BehWindowedRf extends uvm_component;
 
     if (cwp == swp) begin
       swp = (swp + 1) % NWINDOWS;
-      uvm_report_info("debug", "spill", UVM_FULL);
+      uvm_report_info("debug", "spill", UVM_HIGH);
       return 1;
     end
 
@@ -98,25 +98,15 @@ class BehWindowedRf extends uvm_component;
   /* returns 1 for fill */
   function bit ret();
     uvm_report_info("debug",
-      $sformatf("ret: @ locals_idx %0d, cwp %0d, swp $0d", locals_idx, cwp, swp), UVM_FULL);
+      $sformatf("ret: @ locals_idx %0d, cwp %0d, swp %0d", locals_idx, cwp, swp), UVM_HIGH);
 
     /* remove local and out */
     locals_idx -= 2;
     if (locals_idx > 0) begin
       void'(stack.pop_back());
       void'(stack.pop_back());
-
-      /* circular mgmt */
-      cwp = (cwp - 1) % NWINDOWS;
-      if (cwp < 0)
-        cwp += NWINDOWS;
-
-      if (cwp == swp) begin
-        swp = (swp - 1) % NWINDOWS;
-        if (swp < 0)
-          swp += NWINDOWS;
-
-        uvm_report_info("debug", "fill", UVM_FULL);
+      if (fill_mgmt(1)) begin
+        uvm_report_info("debug", "fill", UVM_HIGH);
         return 1;
       end
 
@@ -124,10 +114,40 @@ class BehWindowedRf extends uvm_component;
       uvm_report_error("ret", "too many return");
 
     uvm_report_info("debug",
-      $sformatf("ret: now locals_idx %0d, cwp %0d, swp $0d", locals_idx, cwp, swp), UVM_FULL);
+      $sformatf("ret: now locals_idx %0d, cwp %0d, swp %0d", locals_idx, cwp, swp), UVM_FULL);
     return 0;
 
   endfunction : ret
+
+  /* compute whether a fill is going to occurr */
+  function bit fill_mgmt(bit update = 0);
+    int signed local_cwp = cwp;
+    int signed local_swp = swp;
+    bit ret;
+
+    /* circular mgmt */
+    local_cwp = (local_cwp - 1) % NWINDOWS;
+    if (local_cwp < 0)
+      local_cwp += NWINDOWS;
+
+    if (local_cwp == local_swp) begin
+      local_swp = (local_swp - 1) % NWINDOWS;
+      if (local_swp < 0)
+        local_swp += NWINDOWS;
+
+      ret = 1;
+    end
+
+    ret = 0;
+
+    if (update) begin
+      cwp = local_cwp;
+      swp = local_swp;
+    end
+
+    return ret;
+
+  endfunction : fill_mgmt
 
   function void update(RspTxn t);
     t.fill = 0;
@@ -138,11 +158,21 @@ class BehWindowedRf extends uvm_component;
       reset();
 
     /* call wins over ret and both win over enable */
-    else if (t.call)
-      t.spill = call();
+    else if (t.call) begin
+      if (t.aborted) begin
+        uvm_report_info("debug", "aborting call", UVM_HIGH);
+        t.spill = 0;
+      end else
+        t.spill = call();
+    end
 
-    else if (t.ret)
-      t.fill = ret();
+    else if (t.ret) begin
+      if (t.aborted) begin
+        t.fill = fill_mgmt();
+        uvm_report_info("debug", "aborting ret", UVM_HIGH);
+      end else
+        t.fill = ret();
+    end
 
     /* normal operation */
     else if (t.enable) begin

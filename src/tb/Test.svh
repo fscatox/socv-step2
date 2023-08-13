@@ -7,7 +7,7 @@
  * Author            : Fabio Scatozza <s315216@studenti.polito.it>
  *
  * Date              : 08.08.2023
- * Last Modified Date: 08.08.2023
+ * Last Modified Date: 13.08.2023
  *
  * Copyright (c) 2023
  *
@@ -35,6 +35,7 @@ class Test extends BaseTest;
   endfunction
 
   virtual function void configure_env();
+    super.configure_env();
 
     /* stimulus customization */
     RqstTxn::type_id::set_type_override(CnstRqstTxn::get_type());

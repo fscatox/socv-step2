@@ -10,7 +10,7 @@
  * Author            : Fabio Scatozza <s315216@studenti.polito.it>
  *
  * Date              : 06.08.2023
- * Last Modified Date: 11.08.2023
+ * Last Modified Date: 13.08.2023
  *
  * Copyright (c) 2023
  *
@@ -110,7 +110,7 @@ virtual class BaseScoreboard extends uvm_scoreboard;
       uvm_report_info("scoreboard", "MATCH!");
 
     n_total++;
-    uvm_report_info("debug", $sformatf("n_total: %0d", n_total), UVM_FULL);
+    uvm_report_info("debug", $sformatf("n_total: %0d", n_total), UVM_HIGH);
 
     if (n_total == n_xpected) begin
       ok_to_end = 1;

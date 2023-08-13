@@ -25,7 +25,7 @@ script_name="./${0##*/}"
 top_modules=('p4_adder_top' 'windowed_rf_top')
 
 # tests
-tests=('Test' 'BaseTest')
+tests=('Test' 'BaseTest' 'Test')
 
 # workspace cleanup
 cleanup() {
@@ -55,7 +55,7 @@ Keys:
   choose top module and test
 
   1    top module     : p4 adder
-       test           : src/tb/p4_adder/Test.svh
+       test           : src/tb/Test.svh
                         customized stimulus
                         coverage collection for testcases
        compile-options: nbit, nbit_per_block
@@ -69,13 +69,24 @@ Keys:
        compile-options: nbit, nbit_per_block
                         default: 32,4
 
+
+  3    top module     : windowed_rf
+       test           : src/tb/Test.svh
+                        customized stimulus
+                        coverage collection for testcases
+       compile-options: nbit, nbit_mem, nglobals, nlocals, nwindows
+                        default: 32,8,8,8,4
+
+
 Compile Options Format:
   in a list of numeric values, the separator can't include whitespaces.
 
 Plusargs: forwarded to the vsim call
 
   +n_txn=<txn number>             number of transactions
-                                  default: 100
+                                  default: 
+                                    - p4_adder      100
+                                    - windowed_rf   1000
 
   +quiet                          suppress printer messages to screen
 
@@ -85,9 +96,13 @@ Plusargs: forwarded to the vsim call
                                     - uvm config db dump
                                     - factory configuration
                                     - info messages by components
+
+                =UVM_HIGH         enable a subset of debugging messages
+
 Examples:
   $script_name -k 1
   $script_name -k 1 -c 32,8 +n_txn=10 +UVM_VERBOSITY=UVM_FULL
+  $script_name -k 3 -c 32,8,8,8,4 
 "
 }
 
@@ -146,7 +161,7 @@ if ! [[ "$key" =~ ^[0-9]+$ ]]; then
   return 1
 fi
 
-if (( key < 1 || key > 2)); then
+if (( key < 1 || key > 3)); then
   echo "Out of range 'key'"
   return 1
 fi
@@ -170,7 +185,18 @@ if (( key <= 2 )); then
 else
   top_module="${top_modules[1]}"
 
-  #TODO compile options
+  local copt_pattern='^([0-9]+)[^0-9 ]([0-9]+)[^0-9 ]([0-9]+)[^0-9 ]([0-9]+)[^0-9 ]([0-9]+)$'
+
+  if [[ "$copt" =~ $copt_pattern ]]; then
+    copt="+define+NBIT=${BASH_REMATCH[1]} +define+NBIT_MEM=${BASH_REMATCH[2]}"
+    copt="${copt} +define+NGLOBALS=${BASH_REMATCH[3]} +define+NLOCALS=${BASH_REMATCH[4]}"
+    copt="${copt} +define+NWINDOWS=${BASH_REMATCH[5]}"
+  elif [[ -z "$copt" ]]; then
+    copt="+define+NBIT=32 +define+NBIT_MEM=8 +define+NGLOBALS=8 +define+NLOCALS=8 +define+NWINDOWS=4"
+  elif [[ -n "$copt" ]]; then
+    echo "Invalid 'compile-options'"
+    return 1
+  fi
 
 fi
 

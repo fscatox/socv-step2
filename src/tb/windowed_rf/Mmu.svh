@@ -84,7 +84,7 @@ class Mmu extends uvm_component;
               @(vif.mmu_cb);
               mem.push_back(vif.mmu_cb.out1);
 
-              uvm_report_info("debug", "written", UVM_FULL);
+              uvm_report_info("debug", "written", UVM_HIGH);
               if ($isunknown(vif.mmu_cb.out1))
                 uvm_report_warning("capture", "dut outputs unknown bits");
 
@@ -113,7 +113,7 @@ class Mmu extends uvm_component;
              * the rising edge of mmu_done */
             @(vif.mmu_cb);
             vif.mmu_cb.mmu_data <= mem.pop_back();
-            uvm_report_info("debug", "read", UVM_FULL);
+            uvm_report_info("debug", "read", UVM_HIGH);
 
           end
         end
@@ -133,7 +133,7 @@ class Mmu extends uvm_component;
 
       join_any // the synchronous reset thread
 
-      uvm_report_info("debug", "got reset", UVM_FULL);
+      uvm_report_info("debug", "got reset", UVM_HIGH);
 
       fsm_th.kill();
       uvm_report_info("debug", {"fsm thread: ", fsm_th.status().name()}, UVM_FULL);

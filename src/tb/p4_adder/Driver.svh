@@ -8,7 +8,7 @@
  * Author            : Fabio Scatozza <s315216@studenti.polito.it>
  *
  * Date              : 05.08.2023
- * Last Modified Date: 05.08.2023
+ * Last Modified Date: 13.08.2023
  *
  * Copyright (c) 2023
  *
@@ -59,7 +59,7 @@ class Driver extends uvm_driver#(RqstTxn);
     vif.drv_cb.b <= rqst.b;
     vif.drv_cb.cin <= rqst.cin;
 
-    uvm_report_info("debug", $sformatf("applied item: %s", rqst.convert2string()), UVM_FULL);
+    uvm_report_info("debug", $sformatf("applied item: %s", rqst.convert2string()), UVM_HIGH);
 
   endtask : apply_item
 

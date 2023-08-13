@@ -4,12 +4,14 @@
  * Description       : base request transaction translated by the driver
  *                     to pin wiggles. Tests can use the factory to override
  *                     with a child class that includes stimulus-specific
- *                     constraints
+ *                     constraints. Calling "get_ops()" the fields
+ *                     specifying the requested operations are returned in
+ *                     a packed struct.
  *
  * Author            : Fabio Scatozza <s315216@studenti.polito.it>
  *
  * Date              : 10.08.2023
- * Last Modified Date: 10.08.2023
+ * Last Modified Date: 12.08.2023
  *
  * Copyright (c) 2023
  *
@@ -28,6 +30,16 @@
 
 `ifndef RQSTTXN_SVH
 `define RQSTTXN_SVH
+
+typedef struct packed {
+  bit rd1; // msb
+  bit rd2;
+  bit wr;
+  bit call;
+  bit ret;
+  bit enable;
+  bit reset;
+} packed_ops_t;
 
 class RqstTxn extends uvm_sequence_item;
   `uvm_object_utils(RqstTxn)
@@ -93,6 +105,10 @@ class RqstTxn extends uvm_sequence_item;
 
   endfunction : do_compare
 
+  function packed_ops_t get_ops();
+    return '{rd1, rd2, wr, call, ret, enable, reset};
+  endfunction
+
   virtual function string convert2string();
 
     return {
@@ -107,8 +123,8 @@ class RqstTxn extends uvm_sequence_item;
       $sformatf(" add_wr \t%0d\n", add_wr),
       $sformatf(" call   \t%b\n", call),
       $sformatf(" ret    \t%b\n", ret),
-      $sformatf(" reset  \t%b\n", reset),
-      $sformatf(" enable \t%b\n", enable)
+      $sformatf(" enable \t%b\n", enable),
+      $sformatf(" reset  \t%b\n", reset)
     };
 
    endfunction : convert2string

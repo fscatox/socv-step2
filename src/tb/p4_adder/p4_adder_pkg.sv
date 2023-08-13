@@ -71,7 +71,7 @@ package p4_adder_pkg;
   /* tests */
   `include "CnstRqstTxn.svh"
   `include "StmCoverage.svh"
-  `include "Test.svh"
+  `include "../Test.svh"
 
 endpackage
 

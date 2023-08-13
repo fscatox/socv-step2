@@ -1,16 +1,31 @@
 /**
  * File              : RqstAnlysTxn.svh
  *
- * Description       : extends RqstTxn adding DUT inputs to be used for
- *                     analysis purposes but discarded for output validation.
- *                     The scoreboard won't verify the dut-mmu interaction
- *                     cycles directly, but only through read/write
- *                     operations and fill/spill signals.
+ * Description       : extends RqstTxn adding monitor-to-scoreboard analysis
+ *                     fields required for late-correction of scoreboard
+ *                     predictions. This is because the behavioral DUT that
+ *                     generates the predictions is instantiated in the
+ *                     scoreboard and runs at each incoming response. Instead,
+ *                     a reset request can cut short pending call/return
+ *                     operations. In addition, mmu outputs are sampled as
+ *                     part of the request to the DUT, but having made the
+ *                     choice to have a single analysis communication channel
+ *                     from the monitor to scoreboard, printer and coverage
+ *                     collector, there's no way to separate requests from
+ *                     response samples, which would be necessary to properly
+ *                     examine the mmu/dut interaction. That being said, once
+ *                     having made sure that the behavioral mmu implemented in
+ *                     the testbench complies to the specifications, errors
+ *                     in the DUT due to the interaction with the mmu would
+ *                     still be caught, even though without additional info to
+ *                     help designers. That is, the scoreboard doesn't verify
+ *                     the dut-mmu interaction cycles directly, but only
+ *                     through read/write operations and fill/spill signals.
  *
  * Author            : Fabio Scatozza <s315216@studenti.polito.it>
  *
  * Date              : 10.08.2023
- * Last Modified Date: 11.08.2023
+ * Last Modified Date: 13.08.2023
  *
  * Copyright (c) 2023
  *
@@ -36,6 +51,8 @@ class RqstAnlysTxn extends RqstTxn;
   data_t mmu_data;
   bit mmu_done;
 
+  bit aborted;
+
   function new(string name = "RqstAnlysTxn");
     super.new(name);
   endfunction
@@ -50,6 +67,7 @@ class RqstAnlysTxn extends RqstTxn;
 
     this.mmu_data = rhs_.mmu_data;
     this.mmu_done = rhs_.mmu_done;
+    this.aborted = rhs_.aborted;
 
   endfunction : do_copy
 
@@ -70,7 +88,8 @@ class RqstAnlysTxn extends RqstTxn;
     return {
       super.convert2string(), "\n",
       $sformatf(" mmu_data \t%x\n", mmu_data),
-      $sformatf(" mmu_done \t%b\n", mmu_done)
+      $sformatf(" mmu_done \t%b\n", mmu_done),
+      $sformatf(" aborted  \t%b\n", aborted)
     };
 
   endfunction : convert2string

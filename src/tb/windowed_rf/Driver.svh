@@ -65,7 +65,7 @@ class Driver extends uvm_driver#(RqstTxn);
       uvm_report_info("debug", $sformatf("got item: %s", rqst.convert2string()), UVM_FULL);
 
       apply_item(rqst);
-      uvm_report_info("debug", $sformatf("applied item: %s", rqst.convert2string()), UVM_FULL);
+      uvm_report_info("debug", $sformatf("applied item: %s", rqst.convert2string()), UVM_HIGH);
 
       seq_item_port.item_done();
     end
@@ -79,10 +79,10 @@ class Driver extends uvm_driver#(RqstTxn);
 
     /* rf busy spilling/filling */
     if (!rqst.reset && vif.bypass) begin
-      uvm_report_info("debug", "rf bypassed: waiting", UVM_FULL);
+      uvm_report_info("debug", "rf bypassed: waiting", UVM_HIGH);
 
       @(negedge vif.bypass);
-      uvm_report_info("debug", "rf bypassed: fell", UVM_FULL);
+      uvm_report_info("debug", "rf bypassed: fell", UVM_HIGH);
 
       @(vif.drv_cb);
     end
