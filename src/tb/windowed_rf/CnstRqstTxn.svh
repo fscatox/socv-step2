@@ -148,8 +148,8 @@ class CnstRqstTxn extends RqstTxn;
     };
 
     enable dist {
-      0 := 3,
-      1 := 7
+      0 := 1,
+      1 := 9
     };
 
     /* target ins and outs frequently */
