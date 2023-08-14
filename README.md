@@ -120,7 +120,7 @@ Typical parameterization:
 Test cases:
 
 1. execute all operations. In case of read and write operations, execution means
-   that the operation must be issued and must not be masked by a reset, a call or 
+   that the operation must be issued and must not be masked by a reset, a call or
    a return.
 
 2. read and write operations
@@ -250,16 +250,16 @@ Test cases:
 
         * [`src/tb/p4_adder/StmCoverage.svh`](src/tb/p4_adder/StmCoverage.svh) - extends Coverage
           adding coverage for the testcases of the p4 adder verification plan.
-        
+
         * [`src/tb/p4_adder/FullTest.svh`](src/tb/p4_adder/FullTest.svh) - extends BaseTest adding
           coverage and randomization constraints to the request transactions.
 
         * [`src/tb/p4_adder/p4_adder_pkg.sv`](src/tb/p4_adder/p4_adder_pkg.sv) - namespace for the
           p4 adder UVM-based testbench. The DUT generics are set at compile time defining the
           following macros by command line:
-            
-            - *NBIT*, the data parallelism 
-           
+
+            - *NBIT*, the data parallelism
+
             - *NBIT_PER_BLOCK*, the sparseness of the carry generator tree
 
         * [`src/tb/p4_adder/p4_adder_top.sv`](src/tb/p4_adder/p4_adder_top.sv) - instantiates the
@@ -277,11 +277,11 @@ Test cases:
           with a child class that includes stimulus-specific constraints. Calling `get_ops()` the
           fields specifying the requested operations are returned in a packed struct.
 
-        * [`src/tb/windowed_rf/RqstAnlysTxn.svh`](src/tb/windowed_rf/RqstAnlysTxn.svh) - extends 
+        * [`src/tb/windowed_rf/RqstAnlysTxn.svh`](src/tb/windowed_rf/RqstAnlysTxn.svh) - extends
           RqstTxn adding monitor-to-scoreboard analysis fields required for late-correction of
           scoreboard predictions. This is because the behavioral DUT that generates the predictions is
           instantiated in the scoreboard and runs at each incoming response. Instead, a reset request can
-          cut short pending call/return operations. 
+          cut short pending call/return operations.
 
           In addition, mmu outputs are sampled as part of the request to the DUT, but having made the
           choice to have a single analysis communication channel from the monitor to scoreboard,
@@ -333,7 +333,7 @@ Test cases:
         * [`src/tb/windowed_rf/BehWindowedRf.svh`](src/tb/windowed_rf/BehWindowedRf.svh) - the
           windowed rf is modelled as a stack (SystemVerilog queue) of register sets, as explained
           in the SPARC Architecture Manual, whereas spill and fill are generated treating the
-          stack as a circular buffer, with two pointers to detect the corresponding full and 
+          stack as a circular buffer, with two pointers to detect the corresponding full and
           empty conditions.
 
         * [`src/tb/windowed_rf/Scoreboard.svh`](src/tb/windowed_rf/Scoreboard.svh) - extends
@@ -354,8 +354,8 @@ Test cases:
             - *reset_enhanced*
           Tests can use it via factory override.
 
-        * [`src/tb/windowed_rf/TestSequence.svh`](src/tb/windowed_rf/TestSequence.svh) - 
-          FullTest-specific sequence. It generates a stream of CnstRqstTxn items, specifying as 
+        * [`src/tb/windowed_rf/TestSequence.svh`](src/tb/windowed_rf/TestSequence.svh) -
+          FullTest-specific sequence. It generates a stream of CnstRqstTxn items, specifying as
           randomization parameters the one set at compile time as class templates.
 
         * [`src/tb/windowed_rf/TopSequence.svh`](src/tb/windowed_rf/TopSequence.svh) - assembles
@@ -363,7 +363,7 @@ Test cases:
           This class is test-specific, and additional tests can override it with the factory.
 
         * [`src/tb/windowed_rf/StmCoverage.svh`](src/tb/windowed_rf/StmCoverage.svh) - extends
-          Coverage adding coverage for the testcases of the windowed rf verification plan. 
+          Coverage adding coverage for the testcases of the windowed rf verification plan.
 
         * [`src/tb/windowed_rf/FullTest.svh`](src/tb/windowed_rf/FullTest.svh) - extends BaseTest
           adding coverage and randomization constraints to the request transactions. Notice that
@@ -397,18 +397,71 @@ Test cases:
     ```
 2. Invoke the launcher. Examples:
 
-    * **Pentium IV Adder**. After the execution of the following command, the outputs are saved
-      in `out/p4_adder/NBIT32-NBIT_PER_BLOCK4`.
+    * **Pentium IV Adder**. Execute the following script:
 
       ```bash
-      ./run.sh -k 1
+      for (( i = 3; i <= 7; i++ )); do
+        for (( j = 2; j < i; j++)); do
+          if ! ./run.sh -q -k 1 -c $((2**i)),$((2**j)); then
+            exit 1
+          fi
+        done
+      done
+      exit 0
       ```
- 
-    * **Windowed Register File**. After the execution of the following command, the outputs are
-      saved in `out/windowed_rf/NBIT32-NBIT_MEM8-NGLOBALS8-NLOCALS8-NWINDOWS4`.
+      Here an excerpt of the expected output:
+      ```
+      Outputs written in 'out/p4_adder/NBIT8-NBIT_PER_BLOCK4'
+      Scoreboard Summary:
+        Transactions: 100 out of 100
+        Errors      : 0
+        Coverage    : 100.00%
+      Outputs written in 'out/p4_adder/NBIT16-NBIT_PER_BLOCK4'
+      Scoreboard Summary:
+        Transactions: 100 out of 100
+        Errors      : 0
+        Coverage    : 100.00%
 
-      ```bash
-      ./run.sh -k 3
+      ...
+
+      Outputs written in 'out/p4_adder/NBIT128-NBIT_PER_BLOCK4'
+      Scoreboard Summary:
+        Transactions: 100 out of 100
+        Errors      : 0
+        Coverage    : 100.00%
+      Outputs written in 'out/p4_adder/NBIT128-NBIT_PER_BLOCK8'
+      Scoreboard Summary:
+        Transactions: 100 out of 100
+        Errors      : 0
+        Coverage    : 100.00%
+      Outputs written in 'out/p4_adder/NBIT128-NBIT_PER_BLOCK16'
+      Scoreboard Summary:
+        Transactions: 100 out of 100
+        Errors      : 0
+        Coverage    : 100.00%
+      Outputs written in 'out/p4_adder/NBIT128-NBIT_PER_BLOCK32'
+      Scoreboard Summary:
+        Transactions: 100 out of 100
+        Errors      : 0
+        Coverage    : 100.00%
+      Outputs written in 'out/p4_adder/NBIT128-NBIT_PER_BLOCK64'
+      Scoreboard Summary:
+        Transactions: 100 out of 100
+        Errors      : 0
+        Coverage    : 100.00%
+      ```
+
+    * **Windowed Register File**. Execute the following command:
+      ```
+      ./run.sh -q -k 3 +n_txn=2000
+      ```
+      The expected output is:
+      ```
+      Outputs written in 'out/windowed_rf/NBIT32-NBIT_MEM8-NGLOBALS8-NLOCALS8-NWINDOWS4'
+      Scoreboard Summary:
+        Transactions: 6000 out of 6000
+        Errors      : 0
+        Coverage    : 100.00%
       ```
    For additional info, hit `./run.sh -h`.
 

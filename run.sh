@@ -60,26 +60,28 @@ Keys:
 
   1    top module     : p4 adder
        test           : src/tb/p4_adder/FullTest.svh
-                        customized stimulus
-                        coverage collection for testcases
+       description    : customized stimulus,
+                        coverage collection enabled
        compile-options: nbit, nbit_per_block
                         default: 32,4
 
 
   2    top module     : p4 adder
        test           : src/tb/p4_adder/NoCnstNoCovTest.svh
-                        default environment (no coverage collection)
-                        no randomization constraints
+       description    : no randomization constraints,
+                        default environment, no coverage collection
        compile-options: nbit, nbit_per_block
                         default: 32,4
 
 
   3    top module     : windowed_rf
        test           : src/tb/windowed_rf/FullTest.svh
-                        test-sequence dependent stimulus
-                        coverage collection for testcases
-       note            : n_txn is per test sequence, for a total of
-                        3*n_txn actual request items
+       description    : hierarchical test sequence
+                          - reset sequence
+                          - test sequence 'a', n_txn requests
+                          - test sequence 'b', n_txn requests
+                          - test sequence 'c', n_txn requests
+                        coverage collection enabled
        compile-options: nbit, nbit_mem, nglobals, nlocals, nwindows
                         default: 32,8,8,8,4
 
@@ -105,7 +107,7 @@ Plusargs: forwarded to the vsim call
 Examples:
   $script_name -q -k 1
   $script_name -k 1 -c 64,8 +n_txn=10 +UVM_VERBOSITY=UVM_HIGH
-  $script_name -k 3 -c 32,8,8,8,4 
+  $script_name -q -k 3 -c 32,16,8,8,8
 "
 }
 
