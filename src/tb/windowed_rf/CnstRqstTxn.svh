@@ -75,7 +75,7 @@ class CnstRqstTxn extends RqstTxn;
     /* initialization */
     call_weight  = CALL_RET_WEIGHT;
     ret_weight   = CALL_RET_WEIGHT;
-    reset_weight = RESET_WEIGHT;
+    this.reset_weight = RESET_WEIGHT;
 
   endfunction : set_profile
 
