@@ -252,6 +252,26 @@ mkdir -p "$out_dir"
 
 }
 
+parse_scoreboard() {
+  local summary=$(awk '/Scoreboard Summary/,/TEST (PASSED|FAILED)/' "${out_dir}/vsim.log")
+  local pat='[[:print:][:space:]]+(Transactions[:0-9.%a-z ]+)[[:print:][:space:]]+(Errors[:0-9.%a-z ]+)([[:print:][:space:]]+(Coverage[:0-9.%a-z ]+))?[[:print:][:space:]]*'
+
+  if [[ "$summary" =~ $pat ]]; then
+    echo "Scoreboard Summary:"
+    echo "  ${BASH_REMATCH[1]}"
+    echo "  ${BASH_REMATCH[2]}"
+
+    if [[ -n "${BASH_REMATCH[4]}" ]]; then
+      echo "  ${BASH_REMATCH[4]}"
+    fi
+
+    return 0
+
+  fi
+  return 1
+
+}
+
 if ! parse_cmdline "$@"; then
   echo "Try '$script_name -h' for more information."
   exit 1
@@ -284,5 +304,10 @@ if (( exit_status )); then
 fi
 
 echo "Outputs written in '$out_dir'"
+
+if ! parse_scoreboard; then
+  exit 1
+fi
+
 exit 0
 
