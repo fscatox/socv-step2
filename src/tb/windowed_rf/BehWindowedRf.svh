@@ -3,9 +3,9 @@
  *
  * Description       : the windowed rf is modelled as a stack of register
  *                     sets (as explained in the SPARC Architecture Manual),
- *                     whereas fill and spill are generated treating the
+ *                     whereas spill and fill are generated treating the
  *                     stack as a circular buffer, with two pointers to
- *                     detect the full condition.
+ *                     detect the corresponding full and empty conditions.
  *
  * Author            : Fabio Scatozza <s315216@studenti.polito.it>
  *

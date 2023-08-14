@@ -1,7 +1,7 @@
 /**
  * File              : Agent.svh
  *
- * Description       : p4 adder agent. To add flexibility, it's extended from
+ * Description       : windowed rf agent. To add flexibility, it's extended from
  *                     uvm_agent and configurable in either active or passive mode
  *
  * Author            : Fabio Scatozza <s315216@studenti.polito.it>

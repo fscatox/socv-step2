@@ -88,7 +88,7 @@ Parameterization test:
         define NBIT = 2^i
         define NBIT_PER_BLOCK = 2^j
 
-Testcases:
+Test cases:
 
 1. zero input
      1. all 0s on an input
@@ -117,7 +117,7 @@ Typical parameterization:
     NLOCALS = 8
     NWINDOWS = 4 // to increase spill/fill events
 
-Testcases:
+Test cases:
 
 1. execute all operations. In case of read and write operations, execution means
    that the operation must be issued and must not be masked by a reset, a call or 
@@ -197,7 +197,7 @@ Testcases:
       can call `configure_env()` to perform last minute tweaking. Additional customization parameters
       can be passed as plusargs:
 
-        - the number of request transactions can be set by command line with
+        - the number of request transactions per test sequence can be set by command line with
           `+n_txn=<txn number>`; otherwise, it defaults to 100
 
         - the printer file can be set by command line with `+printer_file=<file path>`;
@@ -255,8 +255,12 @@ Testcases:
           coverage and randomization constraints to the request transactions.
 
         * [`src/tb/p4_adder/p4_adder_pkg.sv`](src/tb/p4_adder/p4_adder_pkg.sv) - namespace for the
-          p4 adder UVM-based testbench. The DUT generics are set at compile time defining the macros
-          *NBIT* and *NBIT_PER_BLOCK* by command line.
+          p4 adder UVM-based testbench. The DUT generics are set at compile time defining the
+          following macros by command line:
+            
+            - *NBIT*, the data parallelism 
+           
+            - *NBIT_PER_BLOCK*, the sparseness of the carry generator tree
 
         * [`src/tb/p4_adder/p4_adder_top.sv`](src/tb/p4_adder/p4_adder_top.sv) - instantiates the
           DUT and the free running clock, then it sets up and invokes the test specified by command
@@ -298,7 +302,7 @@ Testcases:
           requests from the DUT, implementing the FSM described in the documentation in the run phase
           task. The synchronous reset is handled by restarting the fsm thread.
 
-        * [`src/tb/windowed_rf/Driver.svh`](src/tb/windowed_rf/Driver.svh) -translates incoming
+        * [`src/tb/windowed_rf/Driver.svh`](src/tb/windowed_rf/Driver.svh) - translates incoming
           sequence items to pin wiggles, communicating with the DUT through the virtual interface.
           It instantiates the Mmu component to reply to DUT spill and fill requests. Instead of
           using a configuration object to pass the virtual interface down the hierarchy, the driver
@@ -316,20 +320,21 @@ Testcases:
             - it samples the response for the request that was sampled the cycle before.
               Once the response is available, it's broadcasted.
 
-              Request sampling is suspended while the bypass signal is active, because the driver
-              waits for the register file to become available before applying new requests, with
-              the exception of reset operations. In the case of a call operation, the response must
-              be sampled not one cycle but two cycles after the request, which is the one during
-              which the rf may raise spill.
+          Request sampling is suspended while the bypass signal is active, because the driver
+          waits for the register file to become available before applying new requests, with
+          the exception of reset operations. In the case of a call operation, the response must
+          be sampled not one cycle but two cycles after the request, which is the one during
+          which the rf may raise spill.
 
-        * [`src/tb/windowed_rf/Agent.svh`](src/tb/windowed_rf/Agent.svh) - p4 adder agent. To add
-          flexibility, it's extended from uvm_agent and configurable in either active or passive
+        * [`src/tb/windowed_rf/Agent.svh`](src/tb/windowed_rf/Agent.svh) - windowed rf agent. To
+          add flexibility, it's extended from uvm_agent and configurable in either active or passive
           mode
 
         * [`src/tb/windowed_rf/BehWindowedRf.svh`](src/tb/windowed_rf/BehWindowedRf.svh) - the
           windowed rf is modelled as a stack (SystemVerilog queue) of register sets, as explained
-          in the SPARC Architecture Manual, whereas fill and spill are generated treating the
-          stack as a circular buffer, with two pointers to detect the full condition.
+          in the SPARC Architecture Manual, whereas spill and fill are generated treating the
+          stack as a circular buffer, with two pointers to detect the corresponding full and 
+          empty conditions.
 
         * [`src/tb/windowed_rf/Scoreboard.svh`](src/tb/windowed_rf/Scoreboard.svh) - extends
           BaseScoreboard specifying an analysis communication target and a predictor. Notice that
@@ -340,7 +345,9 @@ Testcases:
           counted in the `+n_txn` requests.
 
         * [`src/tb/windowed_rf/CnstRqstTxn.svh`](src/tb/windowed_rf/CnstRqstTxn.svh) - extends
-          RqstTxn adding constraints to ensure the validity of the stimulus. Before randomizing an object, a "profile" must have been set by calling `set_profile()` with the following arguments:
+          RqstTxn adding constraints to ensure the validity of the stimulus. Before randomizing
+          an object, a "profile" must have been set by calling `set_profile()` with the
+          following arguments:
             - *call_ret_weight*, weight for call/ret operations
             - *call_ret_enhanced*, weight for the call/ret operation after having already issued it
             - *reset_weight*
