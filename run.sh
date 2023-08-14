@@ -30,6 +30,7 @@ tests=('FullTest' 'NoCnstNoCovTest' 'FullTest')
 # workspace cleanup
 cleanup() {
     rm -rf workspace
+    rm -f modelsim.ini
 }
 
 trap cleanup EXIT

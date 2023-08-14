@@ -105,6 +105,7 @@ class BehWindowedRf extends uvm_component;
     if (locals_idx > 0) begin
       void'(stack.pop_back());
       void'(stack.pop_back());
+
       if (fill_mgmt(1)) begin
         uvm_report_info("debug", "fill", UVM_HIGH);
         return 1;
@@ -114,7 +115,7 @@ class BehWindowedRf extends uvm_component;
       uvm_report_error("ret", "too many return");
 
     uvm_report_info("debug",
-      $sformatf("ret: now locals_idx %0d, cwp %0d, swp %0d", locals_idx, cwp, swp), UVM_FULL);
+      $sformatf("ret: now locals_idx %0d, cwp %0d, swp %0d", locals_idx, cwp, swp), UVM_HIGH);
     return 0;
 
   endfunction : ret
@@ -123,7 +124,7 @@ class BehWindowedRf extends uvm_component;
   function bit fill_mgmt(bit update = 0);
     int signed local_cwp = cwp;
     int signed local_swp = swp;
-    bit ret;
+    bit ret = 0;
 
     /* circular mgmt */
     local_cwp = (local_cwp - 1) % NWINDOWS;
@@ -137,8 +138,6 @@ class BehWindowedRf extends uvm_component;
 
       ret = 1;
     end
-
-    ret = 0;
 
     if (update) begin
       cwp = local_cwp;
