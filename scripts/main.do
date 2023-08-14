@@ -5,7 +5,7 @@
 #                     and the post-processing of the applied stimulus.
 # Author            : Fabio Scatozza <s315216@studenti.polito.it>
 # Date              : 02.06.2023
-# Last Modified Date: 09.08.2023
+# Last Modified Date: 14.08.2023
 #
 # Copyright (c) 2023
 #
@@ -30,6 +30,7 @@ set proj_dir        $::env(LAUNCHER_PROJ_DIR)
 set out_dir         $::env(LAUNCHER_PROJ_OUT_DIR)
 
 set top_module      $::env(LAUNCHER_TOP_MODULE)
+set top_module_dir  [regsub {_top} $top_module {}]
 set copt            $::env(LAUNCHER_COPT)
 set plusargs        $::env(LAUNCHER_PLUSARGS)
 
@@ -42,6 +43,7 @@ file mkdir $artifacts_dir
 
 # create the work library
 vlib $artifacts_dir/work
+vmap work $artifacts_dir/work
 
 # recursive glob
 source $script_dir/findFiles.tcl
@@ -50,17 +52,17 @@ source $script_dir/findFiles.tcl
 source $script_dir/autocompile.tcl
 
 # compile vhdl sources 
-set vhdl_compile_command "vcom -work $artifacts_dir/work -explicit -stats=none"
+set vhdl_compile_command "vcom -explicit -stats=none"
 
-if { [autocompile $vhdl_compile_command [findFiles $src_dir "*.vhd"]] } {
+if { [autocompile $vhdl_compile_command [findFiles $src_dir/rtl/$top_module_dir "*.vhd"]] } {
   echo "main.do: compilation of vhdl sources failed"
   abort all
 }
 
 # then systemverilog
-set sv_compile_command "vlog -work $artifacts_dir/work -sv $copt -stats=none"
+set sv_compile_command "vlog -sv $copt -stats=none"
 
-if { [autocompile $sv_compile_command [findFiles $src_dir "*.sv"]] } {
+if { [autocompile $sv_compile_command [findFiles $src_dir/tb/$top_module_dir "*.sv"]] } {
   echo "main.do: compilation of systemverilog sources failed"
   abort all
 }

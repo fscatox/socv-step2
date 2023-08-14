@@ -49,7 +49,10 @@ System requirements:
   QuestaSim must be installed and available in your PATH.
 
 Usage:
-  $script_name -k <key> [-c <compile-options>] [plusargs]
+  $script_name [options] -k <key> [-c <compile-options>] [plusargs]
+
+Options:
+  -q   disable logging to stdout
 
 Keys:
   choose top module and test
@@ -99,7 +102,7 @@ Plusargs: forwarded to the vsim call
                 =UVM_FULL         additional components debugging messages
 
 Examples:
-  $script_name -k 1
+  $script_name -q -k 1
   $script_name -k 1 -c 64,8 +n_txn=10 +UVM_VERBOSITY=UVM_HIGH
   $script_name -k 3 -c 32,8,8,8,4 
 "
@@ -108,7 +111,7 @@ Examples:
 parse_cmdline() {
 
 # -k and -c require values
-local short_options=k:,c:,h
+local short_options=k:,c:,q,h
 local long_options=help
 
 if ! opts=$(getopt -a -n "$script_name" --longoptions "$long_options" --options "$short_options" -- "$@")
@@ -120,8 +123,15 @@ fi
 eval set -- "$opts"
 unset opts
 
+# default
+quiet=0
+
 while true; do
   case "$1" in
+    -q )
+      quiet=1
+      shift
+      ;;
     -k )
       key="$2"
       shift 2
@@ -257,11 +267,19 @@ export LAUNCHER_TOP_MODULE="$top_module"
 export LAUNCHER_COPT="$copt"
 export LAUNCHER_PLUSARGS="$plusargs"
 
-# run QuestaSim logging to file
-if ! vsim -batch -do "do ./scripts/main.do" &> "${out_dir}/vsim.log"; then
+# run QuestaSim
+if (( quiet )); then
+  vsim -batch -do "do ./scripts/main.do" &> "${out_dir}/vsim.log"
+  exit_status="$?"
+else
+  vsim -batch -do "do ./scripts/main.do" 2>&1 | tee "${out_dir}/vsim.log"
+  exit_status="${PIPESTATUS[0]}"
+fi
+
+if (( exit_status )); then
   echo "$script_name: vsim error."
   echo "The log is in '${out_dir}/vsim.log'"
-  exit 1
+  exit "$exit_status"
 fi
 
 echo "Outputs written in '$out_dir'"
