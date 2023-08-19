@@ -9,7 +9,7 @@
  * Author            : Fabio Scatozza <s315216@studenti.polito.it>
  *
  * Date              : 05.08.2023
- * Last Modified Date: 13.08.2023
+ * Last Modified Date: 16.08.2023
  *
  * Copyright (c) 2023
  *
@@ -65,9 +65,11 @@ class Monitor extends uvm_monitor;
     /* synchronize on the sampling active edge */
     @(vif.mon_cb);
 
-    `ASSIGN_UNKNOWN_CHECK(rsp.a, vif.mon_cb.a);
-    `ASSIGN_UNKNOWN_CHECK(rsp.b, vif.mon_cb.b);
-    `ASSIGN_UNKNOWN_CHECK(rsp.cin, vif.mon_cb.cin);
+    rsp.a   = vif.mon_cb.a;
+    rsp.b   = vif.mon_cb.b;
+    rsp.cin = vif.mon_cb.cin;
+
+    /* driven by the dut */
     `ASSIGN_UNKNOWN_CHECK(rsp.s, vif.mon_cb.s);
     `ASSIGN_UNKNOWN_CHECK(rsp.cout, vif.mon_cb.cout);
 

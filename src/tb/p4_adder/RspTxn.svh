@@ -30,7 +30,7 @@
 class RspTxn extends RqstTxn;
   `uvm_object_utils(RspTxn)
 
-  p4_adder_pkg::data_t s;
+  data_t s;
   bit cout;
 
   function new(string name = "RspTxn");

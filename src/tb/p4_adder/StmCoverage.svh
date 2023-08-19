@@ -109,8 +109,6 @@ class StmCoverage extends Coverage;
       /* testcase 6 */
       bins ovfw          = { 1 };
 
-      ignore_bins others = { 0 };
-
     }
 
   endgroup

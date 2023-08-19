@@ -21,7 +21,7 @@
  * Author            : Fabio Scatozza <s315216@studenti.polito.it>
  *
  * Date              : 11.08.2023
- * Last Modified Date: 13.08.2023
+ * Last Modified Date: 16.08.2023
  *
  * Copyright (c) 2023
  *
@@ -95,7 +95,7 @@ class Monitor extends uvm_monitor;
     @(vif.mon_cb);
 
     /* new request is a reset ? */
-    `ASSIGN_UNKNOWN_CHECK(reset_rqst, vif.mon_cb.reset);
+    reset_rqst = vif.mon_cb.reset;
 
     /* is there a pending request ? */
     if (rsp != null) begin
@@ -149,20 +149,20 @@ class Monitor extends uvm_monitor;
         /* allocate the new request */
         rqst = new("rqst");
 
-        rqst.bypass = bypass_rqst;
-        rqst.reset = reset_rqst;
-        `ASSIGN_UNKNOWN_CHECK(rqst.enable, vif.mon_cb.enable);
-        `ASSIGN_UNKNOWN_CHECK(rqst.rd1, vif.mon_cb.rd1);
-        `ASSIGN_UNKNOWN_CHECK(rqst.rd2, vif.mon_cb.rd2);
-        `ASSIGN_UNKNOWN_CHECK(rqst.wr, vif.mon_cb.wr);
-        `ASSIGN_UNKNOWN_CHECK(rqst.add_rd1, vif.mon_cb.add_rd1);
-        `ASSIGN_UNKNOWN_CHECK(rqst.add_rd2, vif.mon_cb.add_rd2);
-        `ASSIGN_UNKNOWN_CHECK(rqst.add_wr, vif.mon_cb.add_wr);
-        `ASSIGN_UNKNOWN_CHECK(rqst.datain, vif.mon_cb.datain);
-        `ASSIGN_UNKNOWN_CHECK(rqst.call, vif.mon_cb.call);
-        `ASSIGN_UNKNOWN_CHECK(rqst.ret, vif.mon_cb.ret);
-        `ASSIGN_UNKNOWN_CHECK(rqst.mmu_data, vif.mon_cb.mmu_data);
-        `ASSIGN_UNKNOWN_CHECK(rqst.mmu_done, vif.mon_cb.mmu_done);
+        rqst.bypass   = bypass_rqst;
+        rqst.reset    = reset_rqst;
+        rqst.enable   = vif.mon_cb.enable;
+        rqst.rd1      = vif.mon_cb.rd1;
+        rqst.rd2      = vif.mon_cb.rd2;
+        rqst.wr       = vif.mon_cb.wr;
+        rqst.add_rd1  = vif.mon_cb.add_rd1;
+        rqst.add_rd2  = vif.mon_cb.add_rd2;
+        rqst.add_wr   = vif.mon_cb.add_wr;
+        rqst.datain   = vif.mon_cb.datain;
+        rqst.call     = vif.mon_cb.call;
+        rqst.ret      = vif.mon_cb.ret;
+        rqst.mmu_data = vif.mon_cb.mmu_data;
+        rqst.mmu_done = vif.mon_cb.mmu_done;
 
         /* if the call generates a spill, an additional cycle is required to
          * sample the response. In case of a ret, the fill can be sampled the

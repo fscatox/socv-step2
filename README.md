@@ -48,7 +48,7 @@ more advanced verification methodologies and their elected language, SystemVeril
       features.
 
 Primarily guided by [1], I leveraged object-oriented and generic programming principles to develop a
-reusable, templated testbench framework that I was than able to specialize for specific DUTs. By
+reusable, templated testbench framework that I was then able to specialize for specific DUTs. By
 designing and developing the entire testbench architecture, I gained a better understanding of the
 techniques that go into the classes and utilities of standardized verification libraries such as the
 UVM.
@@ -401,7 +401,7 @@ Test cases:
 
       ```bash
       for (( i = 3; i <= 7; i++ )); do
-        for (( j = 2; j < i; j++)); do
+        for (( j = 2; j < i; j++ )); do
           if ! ./run.sh -q -k 1 -c $((2**i)),$((2**j)); then
             exit 1
           fi
@@ -481,9 +481,11 @@ Language Features, 3rd. Springer US, 2012, isbn: 9781461407140.
 [2] R. Salemi, The UVM Primer: A Step-By-Step Introduction to the Universal Verification
 Methodology, Boston Light Press, 2013, isbn: 9780974164939.
 
-[3] “IEEE Standard for Verilog Hardware Description Language”, IEEE Std 1364-2005 (Revision of IEEE
+[3] "IEEE Standard for Universal Verification Methodology Language Reference Manual", IEEE Std
+1800.2-2020 (Revision of IEEE Std 1800.2-2017), pp.1-458, 2020, doi: 10.1109/IEEESTD.2020.9195920.
+
+[4] “IEEE Standard for Verilog Hardware Description Language”, IEEE Std 1364-2005 (Revision of IEEE
 Std 1364-2001), pp. 1–590, 2006. doi: 10.1109/IEEESTD.2006.99495.
 
-[4] “IEEE Standard for SystemVerilog: Unified Hardware Design, Specification and Verification
+[5] “IEEE Standard for SystemVerilog: Unified Hardware Design, Specification and Verification
 Language”, IEEE Std 1800-2005, pp. 1–648, 2005. doi: 10.1109/IEEESTD.2005.97972.
-
