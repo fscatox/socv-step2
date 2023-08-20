@@ -1,0 +1,84 @@
+% -------------- %
+% ---- INFO ---- %
+% -------------- %
+
+% File: packages.tex
+
+% This files contains the '\usepackage' directives for the packages not already
+% included by the template.
+
+% ------------------ %
+% ---- PACKAGES ---- %
+% ------------------ %
+
+% Input and output text encoding
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+% babel
+\usepackage[english]{babel}
+
+% SI units
+\usepackage{siunitx}
+\sisetup{group-digits=integer,per-mode=symbol,separate-uncertainty=true} %exponent-product=\cdot
+
+% Space in custom commands
+\usepackage{xspace}
+
+% Tables
+\usepackage{booktabs}
+
+% Inline numbered lists 
+\usepackage[inline]{enumitem}
+
+% Graphics
+\usepackage[table,xcdraw]{xcolor}
+\usepackage{graphicx}
+\usepackage{rotating}
+\usepackage{floatpag}
+\usepackage{changepage}
+
+% Simple colour palette
+\definecolor{darkgrey}{HTML}{787878}
+\definecolor{backcolor}{HTML}{f7f7f7}
+\definecolor{accent}{HTML}{c80900}
+\definecolor{lightblue}{HTML}{00b6ff}
+
+% Captions for sub-images
+\usepackage{subcaption}
+
+% Acronyms (unused unless required)
+\usepackage[printonlyreused]{acronym} %printonlyreused
+
+% Bibliography
+\usepackage[style=ieee,sorting=ynt,backref=true]{biblatex}
+\usepackage{csquotes}
+
+% Font and layout
+\usepackage{amsmath}
+\usepackage{fontawesome}
+\usepackage{fancyhdr}
+\usepackage{tabularx}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage[section]{minted}
+\usepackage{colortbl}
+\usepackage{soul}
+\usepackage{tikz}
+\usepackage{algpseudocode}
+
+% References
+\usepackage{hyperref}
+\hypersetup{
+    pdfpagemode={UseOutlines},
+    bookmarksopen,
+    pdfstartview={FitH},
+    colorlinks,
+    linkcolor={black},
+    citecolor={black},
+    urlcolor={blue}
+}
+\usepackage[capitalise,nameinlink]{cleveref}
+
+% Directory tree
+\usepackage{dirtree}

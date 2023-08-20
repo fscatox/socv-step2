@@ -1,0 +1,88 @@
+\documentclass[10pt,  english, makeidx, a4paper, titlepage, oneside]{article}
+
+% ------------------ %
+% ---- PREAMBLE ---- %
+% ------------------ %
+
+\usepackage[]{geometry}
+\geometry{a4paper}
+\renewcommand{\floatpagefraction}{.7}
+
+% Packages
+% --------
+\input{packages.tex}
+
+% Bibliography
+% ------------
+\bibliography{references}
+\nocite{*}
+
+% Macros and acronyms
+% -------------------
+\input{macros}
+
+\title{
+    Multidisciplinary Workshop\\
+    \textit{SoC Verification Strategies}\\
+    \vspace{1cm}
+    \textbf{Step 2: Technical Report}\\
+    \centerline{\includegraphics[width=0.4\columnwidth]{fig/text-divider.png}}
+}
+
+\author{
+Fabio Scatozza: \href{mailto:s315216@studenti.polito.it}{s315216@studenti.polito.it}
+}
+
+\date{September 1, 2023}
+
+%------------------------------------------------------------------
+% DOCUMENT STARTS HERE
+%------------------------------------------------------------------
+\begin{document}
+
+\makeatletter
+\begin{titlepage}
+    \centerline{\includegraphics[width=0.4\columnwidth]{fig/poli-det-logo.eps}}
+    \vfill
+    \begin{center}
+        {\huge \@title}
+    \end{center}
+
+    \vfill
+
+    \begin{flushleft}
+        \large
+        \@author
+    \end{flushleft}
+    \vspace{2cm}
+    \centerline{\large \@date}
+\end{titlepage}
+\makeatother
+
+\tableofcontents
+\newpage
+
+\listoflistings
+\newpage
+\listoffigures
+\newpage
+
+\input{./sections/introduction}
+\input{./sections/vplans}
+\input{./sections/benches}
+\input{./sections/results}
+\clearpage
+\input{./sections/conclusion}
+
+\clearpage
+
+% References
+% ---------
+\printbibliography
+
+% Acronyms
+% --------
+\section*{Acronyms}
+\input{acronyms}
+
+\end{document}

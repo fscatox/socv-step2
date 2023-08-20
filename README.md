@@ -24,64 +24,48 @@ SystemVerilog* step.
 
 ## Introduction
 
-In the *Introduction to SystemVerilog* step, I had the opportunity to begin tackling the
-shortcomings of the directed testing approach, getting familiar with some common principles of
-more advanced verification methodologies and their elected language, SystemVerilog. Most notably:
+In the *Introduction to SystemVerilog* step, I had the opportunity to tackle the limitations of
+the directed testing approach, getting familiar with some common principles of more advanced
+verification methodologies and their elected language, SystemVerilog. Primarily guided by [1], I
+applied object-oriented and generic programming principles to craft a reusable, templated test-
+bench framework that I could specialize for specific DUTs. Through the design and development
+of the entire testbench architecture, I gained a better understanding of the techniques that go
+into the classes and utilities of the Universal Verification Methodology (UVM) library, which
+established itself as a de facto industry standard for functional verification.
 
-- *constrained-random stimuli*. Contrary to directed tests, which find bugs where they are expected
-  to be, randomness allows to find bugs that were never anticipated; at the same time, constraints
-  are essential to ensure that the stimulus is valid and relevant to the DUT.
+The goal of this step is to apply the UVM to develop fully-fledged SystemVerilog verification
+environments for some intermediate designs from the *Microelectronic Systems* course laboratories:
 
-- *functional coverage*. Once having switched to random tests, functional coverage becomes the metric
-  for tracking progress in the verification plan, ensuring that all the intended features of the DUT
-  were exercised.
+- Intel's Pentium IV Adder, described with generic data parallelism and carry-generator
+  tree sparseness.
 
-- *layered structure*. Random stimuli imply the need for an environment capable of predicting the
-  expected response; building this infrastructure requires additional work, thus the importance of
-  effectively managing complexity:
-
-    - the abstraction level is raised up to the transaction level. The environment is structured in a
-      layered manner, composing simpler modules.
-
-    - language expressiveness limits analyzability, synthesizability and optimizability. Nonetheless,
-      being verification the primary goal, HDLs make way for SystemVerilog and its convenient set of
-      features.
-
-Primarily guided by [1], I leveraged object-oriented and generic programming principles to develop a
-reusable, templated testbench framework that I was then able to specialize for specific DUTs. By
-designing and developing the entire testbench architecture, I gained a better understanding of the
-techniques that go into the classes and utilities of standardized verification libraries such as the
-UVM.
-
-The goal of this step is to apply the UVM to develop a fully-fledged SystemVerilog verification
-environment for some intermediate designs from the *Microelectronic Systems* course laboratories:
-
-- the Pentium IV Adder, described with generic data parallelism and tree sparseness;
-
-- a windowed register file
+- A fixed-size windowed register file, inspired by the SPARC instruction set architecture.
 
 As a glimpse of the used UVM features:
 
-- customization both via the factory and the configuration database
+- Customization both via the factory and the configuration database
 
 - TLM and analysis communication
 
-- id and severity specific logging to file
+- Id and severity specific logging to file
 
-- bottom-up veto power via objections and `phase_ready_to_end()`
+- Bottom-up veto power via objections and `phase_ready_to_end()`
 
 ## Verification Plan
 
-The verification plan is directly derived from the design specifications and encompasses the
-description of what features shall be exercised and the techniques to do so.
+The verification plan is derived from the design specifications and outlines the test
+cases for the DUT features to be exercised. The techniques chosen to measure progress
+are both code and functional coverage.
 
-Given that the DUTs are parameterized, a simple approach for verifying their correctness is to let
-the parameters be defined as compile-time options and repeat the simulations while changing them in
-the set of interest.
+Given that the DUTs are parameterized, a simple development strategy involves maintaining
+a package that defines the DUT namespace, within which declaring the global parameters,
+whose value is set via macros defined at compile time through the command line. Once having
+identified the range of interest for the parameters, this approach only requires repeating the
+simulations while changing the macros definitions.
 
 ### Pentium IV Adder
 
-Parameterization test:
+Parameterizations:
 
     for i in {3, ..., 7}
       for j in {2, ..., i-1}
@@ -109,13 +93,13 @@ Test cases:
 
 ### Windowed Register File
 
-Typical parameterization:
+Parameterizations:
 
-    NBIT = 32
+    NBIT in {8, 16, 32, 64}
     NBIT_MEM = 8
-    NGLOBALS = 8
-    NLOCALS = 8
-    NWINDOWS = 4 // to increase spill/fill events
+    NGLOBALS in {8, 10, 12}
+    NLOCALS in {8, 10, 12}
+    NWINDOWS in {4, 8, 16, 32}
 
 Test cases:
 
@@ -409,59 +393,40 @@ Test cases:
       done
       exit 0
       ```
-      Here an excerpt of the expected output:
+      Here is an excerpt of the expected output:
       ```
       Outputs written in 'out/p4_adder/NBIT8-NBIT_PER_BLOCK4'
-      Scoreboard Summary:
-        Transactions: 100 out of 100
-        Errors      : 0
-        Coverage    : 100.00%
+      Summary:
+        RTL code coverage  : 100.00%
+        Transactions       : 100 out of 100
+        Errors             : 0
+        Functional coverage: 100.00%
       Outputs written in 'out/p4_adder/NBIT16-NBIT_PER_BLOCK4'
-      Scoreboard Summary:
-        Transactions: 100 out of 100
-        Errors      : 0
-        Coverage    : 100.00%
-
+      Summary:
+        RTL code coverage  : 100.00%
+        Transactions       : 100 out of 100
+        Errors             : 0
+        Functional coverage: 100.00%
+      Outputs written in 'out/p4_adder/NBIT16-NBIT_PER_BLOCK8'
+      Summary:
+        RTL code coverage  : 100.00%
+        Transactions       : 100 out of 100
+        Errors             : 0
+        Functional coverage: 100.00%
+      
       ...
 
-      Outputs written in 'out/p4_adder/NBIT128-NBIT_PER_BLOCK4'
-      Scoreboard Summary:
-        Transactions: 100 out of 100
-        Errors      : 0
-        Coverage    : 100.00%
-      Outputs written in 'out/p4_adder/NBIT128-NBIT_PER_BLOCK8'
-      Scoreboard Summary:
-        Transactions: 100 out of 100
-        Errors      : 0
-        Coverage    : 100.00%
-      Outputs written in 'out/p4_adder/NBIT128-NBIT_PER_BLOCK16'
-      Scoreboard Summary:
-        Transactions: 100 out of 100
-        Errors      : 0
-        Coverage    : 100.00%
-      Outputs written in 'out/p4_adder/NBIT128-NBIT_PER_BLOCK32'
-      Scoreboard Summary:
-        Transactions: 100 out of 100
-        Errors      : 0
-        Coverage    : 100.00%
       Outputs written in 'out/p4_adder/NBIT128-NBIT_PER_BLOCK64'
-      Scoreboard Summary:
-        Transactions: 100 out of 100
-        Errors      : 0
-        Coverage    : 100.00%
+      Summary:
+        RTL code coverage  : 100.00%
+        Transactions       : 100 out of 100
+        Errors             : 0
+        Functional coverage: 100.00%
       ```
 
     * **Windowed Register File**. Execute the following command:
       ```
-      ./run.sh -q -k 3 +n_txn=2000
-      ```
-      The expected output is:
-      ```
-      Outputs written in 'out/windowed_rf/NBIT32-NBIT_MEM8-NGLOBALS8-NLOCALS8-NWINDOWS4'
-      Scoreboard Summary:
-        Transactions: 6000 out of 6000
-        Errors      : 0
-        Coverage    : 100.00%
+      ./run.sh -q -k 3 +n_txn=5000
       ```
    For additional info, hit `./run.sh -h`.
 
@@ -471,7 +436,7 @@ Test cases:
 
     * the output of logs post-processing: `extract.csv`
 
-    * the coverage report: `func_cover.rpt`
+    * the coverage reports: `code_cover.rpt` and `func_cover.rpt`
 
 ## References
 

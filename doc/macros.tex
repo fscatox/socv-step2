@@ -1,0 +1,49 @@
+% -------------- %
+% ---- INFO ---- %
+% -------------- %
+
+% File: macros.tex
+
+% This file contains some useful shortcuts to print long names or frequently
+% used acronyms. Because we're lazy. That's it. 
+
+% ---------------- %
+% ---- MACROS ---- %
+% ---------------- %
+
+% Text macros
+\newcommand{\dut}{\ac{dut}\xspace}
+\newcommand{\alu}{\ac{alu}\xspace}
+\newcommand{\sv}{SystemVerilog\xspace}
+\newcommand{\uvm}{\ac{uvm}\xspace}
+\newcommand{\vhdl}{VHDL\xspace}
+\def\CC{{C\nolinebreak[4]\hspace{-.05em}\raisebox{.4ex}{\tiny\bf ++}}\xspace}
+\newcommand{\questa}{\texttt{QueastaSim}\xspace}
+
+% Units
+\DeclareSIUnit \bit {bit}
+
+% Listings
+\setminted[]{
+  frame=lines,
+  linenos=false,
+  framesep=2mm,
+  baselinestretch=1.2,
+  %bgcolor=mintedbackground,
+  %fontsize=\scriptsize,
+  samepage=false,
+  obeytabs=true,
+  tabsize=2
+}
+\newcommand{\svinline}[1]{\mintinline{systemverilog}{#1}}
+\newcommand{\vhdlinline}[1]{\mintinline{vhdl}{#1}}
+
+% overlay arrows
+\usetikzlibrary{tikzmark,calc}
+\newcommand{\VerticalShiftStartArrows}{0,-.05}%
+\newcommand{\VerticalShiftEndArrows}{0,+.15}%
+\newcommand{\DrawArrows}[3][]{%
+    \coordinate (Start Mid) at ($(pic cs:#2Left)!0.5!(pic cs:#2Right) + (\VerticalShiftStartArrows)$);
+    \coordinate (End Mid)   at ($(pic cs:#3Left)!0.5!(pic cs:#3Right) + (\VerticalShiftEndArrows)$);
+    \draw[->, #1, thick] (Start Mid) to (End Mid);
+}

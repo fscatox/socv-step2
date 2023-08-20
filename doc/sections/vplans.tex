@@ -1,0 +1,149 @@
+\section{The Verification Plan}\label{sec:vplan}
+
+\begin{listing}
+\begin{minted}[bgcolor=backcolor, fontsize=\scriptsize]{systemverilog}
+`define ASSIGN_UNKNOWN_CHECK(lhs, rhs) \
+  do begin \
+    lhs = rhs; \
+    if ($isunknown(rhs)) \
+      uvm_report_warning("capture", "dut outputs unknown bits"); \
+  end while (0)
+\end{minted}
+\caption{Macro function to guard against the propagation of unknown values when reading the \acs{dut} outputs.}
+\label{list:macro_unkn}
+\end{listing}
+
+\noindent Starting from the design specifications I formulated the verification plans, which outline the test cases for the features to be exercised; the techniques chosen to measure progress in the verification process are both code and functional coverage. 
+
+Given that both the {\dut}s are parameterized, a simple development strategy involves maintaining a package that defines the \dut namespace, within which declaring the global parameters, whose value is set via macros defined at compile time through the command line. Once having identified the range of interest for the parameters, this approach only requires repeating the simulations while changing the macros definitions.
+
+To improve simulation performance and reduce the memory footprint, I opted for the 2-state data types offered by \sv. This requires additional care when connecting the testbench to the outputs of the \dut, as it may try to drive \svinline{x} or \svinline{z} values that would be automatically converted to a 2-state value. The check is performed with the macro function shown in~\cref{list:macro_unkn}, defined in both {\dut}s namespaces.
+
+\subsection{Functional Coverage Collection}\label{subsec:func_cov}
+As shown in the testbench architectures of~\cref{fig:duts_tb}, the response transactions broadcasted by the monitor through the analysis port reach the coverage collector subscriber, a component that extends \svinline{uvm_subscriber}, parameterized by the response transaction class \svinline{RspTxn}, that provides an implementation for the port function \svinline{write()}. The coverage collector is implemented in a hierarchy of two levels:
+\begin{description}
+    \item[\svinline{virtual class Coverage}] It's the abstract base class handled by the environment, thus meant to be overridden by test classes via the factory. It implements the \svinline{write()} function of the monitor analysis port: it grabs the incoming response transaction in a local handle, then it invokes the pure virtual function \svinline{sample()}.
+    
+    \item[\svinline{class StmCoverage}] It's the child class included in each \dut namespace that embeds the cover group for the test cases of interest and implements the \svinline{sample()} function to let the parent trigger the sampling of the cover group.
+\end{description}
+
+\subsection{Intel's Pentium IV Adder}\label{subsec:vplan-p4}
+
+\begin{listing}
+\begin{minted}[bgcolor=backcolor, fontsize=\scriptsize]{systemverilog}
+a_cp : coverpoint txn.a {
+
+  bins zeros  = { 0 };
+  bins others = { [1:{NBIT{1'b1}}-1] };
+  bins ones   = { {NBIT{1'b1}} };
+
+  /* don't count the coverpoint alone */
+  type_option.weight = 0;
+}
+
+b_cp : coverpoint txn.b {
+
+  bins zeros  = { 0 };
+  bins others = { [1:{NBIT{1'b1}}-1] };
+  bins ones   = { {NBIT{1'b1}} };
+
+  /* don't count the coverpoint alone */
+  type_option.weight = 0;
+}
+
+a_cp_cross_b_cp : cross a_cp, b_cp {
+
+  /* testcase 1.1 */
+  bins one_zeros   = (binsof(a_cp.zeros) &&
+                       (binsof(b_cp.others) || binsof(b_cp.ones))) || // a zeros, b not
+                     (binsof(b_cp.zeros) &&
+                       (binsof(a_cp.others) || binsof(a_cp.ones)));   // b zeros, a not
+    ...
+}
+\end{minted}
+\caption{Snippet of the cross coverage statements used to measure coverage for the test cases in the verification plan of the adder under test.}
+\label{list:xcov_ab}
+\end{listing}
+
+\noindent I selected the following test cases as the basis for functional coverage:
+\begin{enumerate}
+    \item Zero input:
+    \begin{enumerate}[label*=\arabic*.]
+        \item All 0s on an input
+        \item All 0s on both inputs
+    \end{enumerate}
+    \item One input:
+    \begin{enumerate}[label*=\arabic*.]
+        \item All 1s on an input
+        \item All 1s on both inputs
+    \end{enumerate}
+    \item Non-corner values on both inputs
+    \item 0s on both inputs and carry-in 0
+    \item 1s on both inputs and carry-in 1
+    \item (unsigned) overflow
+\end{enumerate}
+
+The translation to a \sv cover group is done in two steps. First, I defined cover points to observe the values of the data inputs \vhdlinline{a} and \vhdlinline{b} with custom bins that isolate the corner cases \emph{all 0s} and \emph{all 1s}. In particular, I used the option \svinline{type_option.weight} to avoid counting these auxiliary cover points and the \vhdlinline{cin} cover point alone. Then, I used cross coverage to combine the cover point bins according to the test cases of interest; the~\cref{list:xcov_ab} shows test case 1.1 as an example.
+
+\subsection{Fixed-Size Windowed Register File}\label{subsec:vplan-wrf}
+
+\begin{listing}
+\begin{minted}[bgcolor=backcolor, fontsize=\scriptsize]{systemverilog}
+typedef struct packed {
+  bit rd1; // msb
+  bit rd2;
+  bit wr;
+  bit call;
+  bit ret;
+  bit enable;
+  bit reset;
+} packed_ops_t;
+
+/* testcase 1
+ * notice: call, return and reset can mask read and write operations */
+execute_rw_cp : coverpoint txn.get_ops() {
+  wildcard bins rd1   = { 7'b1??0010 };
+  wildcard bins rd2   = { 7'b?1?0010 };
+  wildcard bins wr    = { 7'b??10010 };
+}
+/* testcase 1 */
+execute_call_ret_reset_cp : coverpoint txn.get_ops() {
+  wildcard bins reset       = { 7'b??????1 };
+  wildcard bins call        = { 7'b???1??0 };       // reset wins over call
+  wildcard bins ret         = { 7'b???01?0 };       // reset and call win over ret
+}
+\end{minted}
+\caption{The snippet shows a more readable and less error-prone approach to cross coverage when the number of cover points is large; it's mimicked by packing the variables as bit fields in a vector and selecting the combinations of interest using wildcard values. Notice that \svinline{get_ops()} is a method of the request transaction class that returns a \svinline{packed_ops_t}.}
+\label{list:xcov_wildcards}
+\end{listing}
+
+\noindent I selected the following test cases as the basis for functional coverage:
+\begin{enumerate}
+    \item Execute all operations. In the case of read and write operations, execution means that the operation must be issued and must not be masked by a reset, a call, or a return.
+    \item Read and write operations:
+    \begin{enumerate}[label*=\arabic*.]
+         \item Disabled by \vhdlinline{rd1}, \vhdlinline{rd2} or \vhdlinline{wr} while enabled by \vhdlinline{enable}
+         \item Enabled by \vhdlinline{rd1}, \vhdlinline{rd2} or \vhdlinline{wr} but disabled by \vhdlinline{enable}
+         \item Issued but masked by a reset, a call, or a return
+         \item Read-before-write, distinguishing between read ports 1 and 2
+    \end{enumerate}
+    \item Call and return operations:
+    \begin{enumerate}[label*=\arabic*.]
+         \item Issued together
+         \item Issued with a reset
+         \item Executed twice in a row
+         \item Generate a spill
+         \item Generate a fill
+    \end{enumerate}
+    \item Reset operation:
+    \begin{enumerate}[label*=\arabic*.]
+         \item Executed twice in a row
+         \item Execute all operations, except for reset and return, after a reset
+         \item Execute all operations, except for reset, before a reset
+    \end{enumerate}
+\end{enumerate}
+
+Unlike the simpler adder, the translation to a \sv cover group is not primarily done with cross coverage, but with an approach that mimics it. The request transaction class \svinline{RqstTxn} provides the method \svinline{get_ops()} to export the bits that define the requested operations in the packed struct \svinline{packed_ops_t}, which is treated as if its members were concatenated in a single vector.
+A cover point records the observed values of a single variable or expression, which means that concatenations and packed structs are allowed as well: to make the definition of the combinations terser, \sv provides the \svinline{wildcard} keyword to specify the bins with bit patterns including don't care values. The~\cref{list:xcov_wildcards} shows test case 1 as an example.
+
+Test cases 3.3 and 4.1 are handled with the consecutive repetition operator, whereas test cases 4.2 and 4.3 are covered by combining wildcard states and the transition operator.
