@@ -29,8 +29,8 @@ tests=('FullTest' 'NoCnstNoCovTest' 'FullTest')
 
 # workspace cleanup
 cleanup() {
-    rm -rf workspace
-    rm -f modelsim.ini
+  rm -rf workspace
+  rm -f modelsim.ini
 }
 
 trap cleanup EXIT
@@ -113,165 +113,172 @@ Examples:
 
 parse_cmdline() {
 
-# -k and -c require values
-local short_options=k:,c:,q,h
-local long_options=help
+  # -k and -c require values
+  local short_options=k:,c:,q,h
+  local long_options=help
 
-if ! opts=$(getopt -a -n "$script_name" --longoptions "$long_options" --options "$short_options" -- "$@")
-then
-  return 1
-fi
-
-# replace input arguments
-eval set -- "$opts"
-unset opts
-
-# default
-quiet=0
-
-while true; do
-  case "$1" in
-    -q )
-      quiet=1
-      shift
-      ;;
-    -k )
-      key="$2"
-      shift 2
-      ;;
-    -c )
-      copt="$2"
-      shift 2
-      ;;
-    -h | --help )
-      show_help
-      exit 0
-      ;;
-    -- )
-      shift
-      break
-      ;;
-    * )
-      echo "Internal error!"
-      exit 1
-      ;;
-  esac
-done
-
-# parse the remaining args
-plusargs="$@"
-
-# key is mandatory
-if [ -z "$key" ]; then
-  echo "Missing 'key'"
-  return 1
-fi
-
-# key is a number
-if ! [[ "$key" =~ ^[0-9]+$ ]]; then
-  echo "Invalid 'key'"
-  return 1
-fi
-
-if (( key < 1 || key > 3)); then
-  echo "Out of range 'key'"
-  return 1
-fi
-
-# pick top module
-if (( key <= 2 )); then
-  top_module="${top_modules[0]}"
-
-  # compile options ?
-  local copt_pattern='^([0-9]+)[^0-9 ]([0-9]+)$'
-
-  if [[ "$copt" =~ $copt_pattern ]]; then
-    copt="+define+NBIT=${BASH_REMATCH[1]} +define+NBIT_PER_BLOCK=${BASH_REMATCH[2]}"
-  elif [[ -z "$copt" ]]; then
-    copt="+define+NBIT=32 +define+NBIT_PER_BLOCK=4"
-  elif [[ -n "$copt" ]]; then
-    echo "Invalid 'compile-options'"
+  if ! opts=$(getopt -a -n "$script_name" --longoptions "$long_options" --options "$short_options" -- "$@")
+  then
     return 1
   fi
 
-else
-  top_module="${top_modules[1]}"
+  # replace input arguments
+  eval set -- "$opts"
+  unset opts
 
-  local copt_pattern='^([0-9]+)[^0-9 ]([0-9]+)[^0-9 ]([0-9]+)[^0-9 ]([0-9]+)[^0-9 ]([0-9]+)$'
+  # default
+  quiet=0
 
-  if [[ "$copt" =~ $copt_pattern ]]; then
-    copt="+define+NBIT=${BASH_REMATCH[1]} +define+NBIT_MEM=${BASH_REMATCH[2]}"
-    copt="${copt} +define+NGLOBALS=${BASH_REMATCH[3]} +define+NLOCALS=${BASH_REMATCH[4]}"
-    copt="${copt} +define+NWINDOWS=${BASH_REMATCH[5]}"
-  elif [[ -z "$copt" ]]; then
-    copt="+define+NBIT=32 +define+NBIT_MEM=8 +define+NGLOBALS=8 +define+NLOCALS=8 +define+NWINDOWS=4"
-  elif [[ -n "$copt" ]]; then
-    echo "Invalid 'compile-options'"
+  while true; do
+    case "$1" in
+      -q )
+        quiet=1
+        shift
+        ;;
+      -k )
+        key="$2"
+        shift 2
+        ;;
+      -c )
+        copt="$2"
+        shift 2
+        ;;
+      -h | --help )
+        show_help
+        exit 0
+        ;;
+      -- )
+        shift
+        break
+        ;;
+      * )
+        echo "Internal error!"
+        exit 1
+        ;;
+    esac
+  done
+
+  # parse the remaining args
+  plusargs="$@"
+
+  # key is mandatory
+  if [ -z "$key" ]; then
+    echo "Missing 'key'"
     return 1
   fi
 
-fi
+  # key is a number
+  if ! [[ "$key" =~ ^[0-9]+$ ]]; then
+    echo "Invalid 'key'"
+    return 1
+  fi
 
-# validate plusargs
-local plusargs_pattern='^(\+[a-zA-Z_]+(=[^ ]+)?( \+[a-zA-Z_]+(=[^ ]+)?)*)?$'
+  if (( key < 1 || key > 3)); then
+    echo "Out of range 'key'"
+    return 1
+  fi
 
-if ! [[ "$plusargs" =~ $plusargs_pattern ]]; then
-  echo "Invalid 'plusargs'"
-  return 1
-fi
+  # pick top module
+  if (( key <= 2 )); then
+    top_module="${top_modules[0]}"
 
-# test selection
-plusargs="+UVM_TESTNAME=${tests[$((key-1))]} $plusargs"
+    # compile options ?
+    local copt_pattern='^([0-9]+)[^0-9 ]([0-9]+)$'
 
-return 0
+    if [[ "$copt" =~ $copt_pattern ]]; then
+      copt="+define+NBIT=${BASH_REMATCH[1]} +define+NBIT_PER_BLOCK=${BASH_REMATCH[2]}"
+    elif [[ -z "$copt" ]]; then
+      copt="+define+NBIT=32 +define+NBIT_PER_BLOCK=4"
+    elif [[ -n "$copt" ]]; then
+      echo "Invalid 'compile-options'"
+      return 1
+    fi
+
+  else
+    top_module="${top_modules[1]}"
+
+    local copt_pattern='^([0-9]+)[^0-9 ]([0-9]+)[^0-9 ]([0-9]+)[^0-9 ]([0-9]+)[^0-9 ]([0-9]+)$'
+
+    if [[ "$copt" =~ $copt_pattern ]]; then
+      copt="+define+NBIT=${BASH_REMATCH[1]} +define+NBIT_MEM=${BASH_REMATCH[2]}"
+      copt="${copt} +define+NGLOBALS=${BASH_REMATCH[3]} +define+NLOCALS=${BASH_REMATCH[4]}"
+      copt="${copt} +define+NWINDOWS=${BASH_REMATCH[5]}"
+    elif [[ -z "$copt" ]]; then
+      copt="+define+NBIT=32 +define+NBIT_MEM=8 +define+NGLOBALS=8 +define+NLOCALS=8 +define+NWINDOWS=4"
+    elif [[ -n "$copt" ]]; then
+      echo "Invalid 'compile-options'"
+      return 1
+    fi
+
+  fi
+
+  # validate plusargs
+  local plusargs_pattern='^(\+[a-zA-Z_]+(=[^ ]+)?( \+[a-zA-Z_]+(=[^ ]+)?)*)?$'
+
+  if ! [[ "$plusargs" =~ $plusargs_pattern ]]; then
+    echo "Invalid 'plusargs'"
+    return 1
+  fi
+
+  # test selection
+  plusargs="+UVM_TESTNAME=${tests[$((key-1))]} $plusargs"
+
+  return 0
 
 }
 
 make_out_dir() {
 
-# top_module ends with '_top'
-out_dir="out/${top_module/_top//}"
+  # top_module ends with '_top'
+  out_dir="out/${top_module/_top//}"
 
-# Iterate through matches and update
-local copt_pattern='\+define\+(\w+)=([^ ]+)'
-local copt_="$copt"
+  # Iterate through matches and update
+  local copt_pattern='\+define\+(\w+)=([^ ]+)'
+  local copt_="$copt"
 
-while [[ "$copt_" =~ $copt_pattern ]]; do
+  while [[ "$copt_" =~ $copt_pattern ]]; do
 
-  out_dir="${out_dir}-${BASH_REMATCH[1]}${BASH_REMATCH[2]}"
+    out_dir="${out_dir}-${BASH_REMATCH[1]}${BASH_REMATCH[2]}"
 
-  # Remove the processed match from $copt
-  copt_="${copt_/${BASH_REMATCH[0]}/}"
+    # Remove the processed match from $copt
+    copt_="${copt_/${BASH_REMATCH[0]}/}"
 
-done
+  done
 
-# remove initial /-
-out_dir="${out_dir/\/-//}"
+  # remove initial /-
+  out_dir="${out_dir/\/-//}"
 
-# if the directory already exists, clean it
-rm -rf "$out_dir"
-mkdir -p "$out_dir"
+  # if the directory already exists, clean it
+  rm -rf "$out_dir"
+  mkdir -p "$out_dir"
 
 }
 
-parse_scoreboard() {
+parse_stats() {
   local summary=$(awk '/Scoreboard Summary/,/TEST (PASSED|FAILED)/' "${out_dir}/vsim.log")
-  local pat='[[:print:][:space:]]+(Transactions[:0-9.%a-z ]+)[[:print:][:space:]]+(Errors[:0-9.%a-z ]+)([[:print:][:space:]]+(Coverage[:0-9.%a-z ]+))?[[:print:][:space:]]*'
+  local pat='[[:print:][:space:]]+Transactions: ([0-9a-z ]+)[[:print:][:space:]]+Errors +: ([0-9]+)([[:print:][:space:]]+Coverage +: ([0-9.%]+))?[[:print:][:space:]]*'
 
+  echo "Summary:"
+
+  # print code coverage
+  if ! awk '/Total Coverage/ {
+      print "  RTL code coverage  :", $NF}' "${out_dir}/code_cover.rpt"; then
+    return 1
+  fi
+
+  # print scoreboard summary
   if [[ "$summary" =~ $pat ]]; then
-    echo "Scoreboard Summary:"
-    echo "  ${BASH_REMATCH[1]}"
-    echo "  ${BASH_REMATCH[2]}"
+    echo "  Transactions       : ${BASH_REMATCH[1]}"
+    echo "  Errors             : ${BASH_REMATCH[2]}"
 
     if [[ -n "${BASH_REMATCH[4]}" ]]; then
-      echo "  ${BASH_REMATCH[4]}"
+      echo "  Functional coverage: ${BASH_REMATCH[4]}"
     fi
 
     return 0
-
   fi
-  return 1
 
+  return 1
 }
 
 if ! parse_cmdline "$@"; then
@@ -307,7 +314,8 @@ fi
 
 echo "Outputs written in '$out_dir'"
 
-if ! parse_scoreboard; then
+if ! parse_stats; then
+  echo "$script_name: parse_stats error."
   exit 1
 fi
 

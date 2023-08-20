@@ -9,7 +9,7 @@
  * Author            : Fabio Scatozza <s315216@studenti.polito.it>
  *
  * Date              : 10.08.2023
- * Last Modified Date: 10.08.2023
+ * Last Modified Date: 20.08.2023
  *
  * Copyright (c) 2023
  *
@@ -67,6 +67,10 @@ class Mmu extends uvm_component;
         forever begin
           @(vif.mmu_cb);
 
+          /* default values */
+          vif.mmu_cb.mmu_done <= 0;
+          vif.mmu_cb.mmu_data <= 0;
+
           if (vif.mmu_cb.spill) begin
             do begin
 
@@ -82,6 +86,7 @@ class Mmu extends uvm_component;
               /* move to the sampling edge */
               @(vif.mmu_cb);
               mem.push_back(vif.mmu_cb.out1);
+              vif.mmu_cb.mmu_done <= 0;
 
               uvm_report_info("debug", "written", UVM_HIGH);
               if ($isunknown(vif.mmu_cb.out1))
@@ -111,6 +116,7 @@ class Mmu extends uvm_component;
             /* mmu_data becomes valid in the clock cycle after
              * the rising edge of mmu_done */
             @(vif.mmu_cb);
+            vif.mmu_cb.mmu_done <= 0;
             vif.mmu_cb.mmu_data <= mem.pop_back();
             uvm_report_info("debug", "read", UVM_HIGH);
 

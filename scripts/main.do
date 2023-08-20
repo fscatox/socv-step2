@@ -51,8 +51,9 @@ source $script_dir/findFiles.tcl
 # compilation with dependency resolution
 source $script_dir/autocompile.tcl
 
-# compile vhdl sources 
-set vhdl_compile_command "vcom -explicit -stats=none"
+# compile vhdl sources
+# enable code coverage for: statements, branches, conditions and fsms
+set vhdl_compile_command "vcom -explicit +cover=bcsf -stats=none"
 
 if { [autocompile $vhdl_compile_command [findFiles $src_dir/rtl/$top_module_dir "*.vhd"]] } {
   echo "main.do: compilation of vhdl sources failed"
@@ -67,31 +68,15 @@ if { [autocompile $sv_compile_command [findFiles $src_dir/tb/$top_module_dir "*.
   abort all
 }
 
-vsim -sv_seed random $top_module {*}$plusargs +printer_file=$out_dir/printer.log +scoreboard_file=$out_dir/scoreboard.log
+vsim -coverage -sv_seed random $top_module {*}$plusargs +printer_file=$out_dir/printer.log +scoreboard_file=$out_dir/scoreboard.log
 run -all
 
-# report coverage
+# report code coverage (excluding vhdl packages)
+coverage exclude -srcfile {*}[findFiles $src_dir/rtl/$top_module_dir "pkg*.vhd"] -code b -code c -code s -code f
+coverage report -code bcesf -details -output $out_dir/code_cover.rpt
 
-# -all
-# When reporting toggles, creates a report that lists both toggled
-# and untoggled signals. Reports counts of all enumeration values.
-# Not a valid option when reporting on a functional coverage database.
-
-# -cvg 
-# Adds covergroup coverage data to the report.
-
-# -details
-# Includes details associated with each coverage item in the output (FEC).
-# By default, details are not provided. You cannot use this argument with -recursive.
-
-# -directive
-# Reports only cover directive coverage data.
-
-# -srcfile=<filename>[+<filename>]
-# Reports the coverage data for the specified source files. By default, all source
-# information is included. You can use wildcards (*).
-
-coverage report -all -cvg -details -directive -output $out_dir/func_cover.rpt
+# report functional coverage
+coverage report -cvg -details -hidecvginsts -output $out_dir/func_cover.rpt
 
 # extract the stimulus vectors prepending Sv_Seed for repeatability
 source $script_dir/log2csv.tcl
